@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import plaidClient from "@/lib/plaid";
 import prisma from "@/lib/prisma";
 import { createClient } from "@/utils/supabase/server";
-import bcrypt from "bcryptjs";
+import { encrypt } from "@/utils/Cryptography/encrypt";
 
 export async function POST(req: NextRequest) {
   const { public_token } = await req.json();
@@ -46,18 +46,16 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const hashAccessToken = await bcrypt.hash(accessToken, 10);
+    const encryptedToken = encrypt(accessToken);
 
     const databaseUser = await prisma.user.update({
       where: {
         email: user.email,
       },
       data: {
-        accessToken: hashAccessToken,
+        accessToken: encryptedToken,
       },
     });
-
-    console.log("Database User: ", databaseUser);
 
     const accountsResponse = await plaidClient.accountsGet({
       access_token: accessToken,
