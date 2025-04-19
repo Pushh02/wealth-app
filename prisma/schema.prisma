@@ -15,15 +15,29 @@ datasource db {
 
 enum Role {
   Admin
-  User
-  Manager
+  Approver
 }
 
 model User {
   id          String  @id @default(uuid())
-  email       String  @unique
-  accessToken String? @unique
-  role        Role    @default(Admin)
   name        String
+  email       String  @unique
   password    String
+
+  accounts Account[]
+  approverAccounts Account[] @relation("AccountApprovers")
+}
+
+model Account {
+  id String @id @default(uuid())
+  name String
+  approvers User[] @relation("AccountApprovers")
+
+  accessToken String? @unique
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }

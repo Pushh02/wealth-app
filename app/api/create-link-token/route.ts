@@ -16,13 +16,15 @@ export async function GET() {
     if (error || !user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
-
-    const databaseUser = await prisma.user.findUnique({
+    
+    const databaseUser = await prisma.user.findFirst({
       where: {
-        email: user.email,
+        email: {
+          equals: user.email,
+          mode: 'insensitive'
+        },
       },
     });
-
     if (!databaseUser) {
       return NextResponse.json(
         {

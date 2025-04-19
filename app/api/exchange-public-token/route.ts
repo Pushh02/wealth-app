@@ -7,6 +7,7 @@ import { encrypt } from "@/utils/Cryptography/encrypt";
 export async function POST(req: NextRequest) {
   const { public_token } = await req.json();
 
+  console.log("public_token", public_token);
   if (!public_token || public_token.trim() === "") {
     return NextResponse.json(
       {
@@ -48,14 +49,25 @@ export async function POST(req: NextRequest) {
 
     const encryptedToken = encrypt(accessToken);
 
-    const databaseUser = await prisma.user.update({
+    const userAccount = await prisma.user.findUnique({
       where: {
-        email: user.email,
+        id: user.id,
       },
-      data: {
-        accessToken: encryptedToken,
-      },
+      
     });
+
+    if (!userAccount) {
+      return NextResponse.json(
+        {
+          status: 401,
+          message: "Unauthorized",
+          success: false,
+        },
+        {
+          status: 401,
+        }
+      );
+    }
 
     const accountsResponse = await plaidClient.accountsGet({
       access_token: accessToken,
