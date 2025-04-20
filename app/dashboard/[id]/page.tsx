@@ -22,6 +22,8 @@ import { FraudAlerts } from "@/components/fraud-alerts"
 import { PendingApprovals } from "@/components/pending-approvals"
 import { useUser } from "@/context/user-context"
 import PlaidConnect from "@/components/ui/Plaid/PlaidConnect"
+import { useQuery } from "@tanstack/react-query"
+import axios from "axios"
 // Mock user data - in a real app, this would come from authentication
 const mockUser = {
   name: "John Doe",
@@ -31,6 +33,19 @@ const mockUser = {
 export default function DashboardPage() {
   const { user } = useUser()
   const isApprover = user?.role === "approver"
+
+  const { data: balance, isLoading: balanceLoading } = useQuery({
+    queryKey: ["balance", user?.accountId],
+    queryFn: () => 
+      axios.get(`/api/accounts/details?accountId=${user?.accountId}`)
+        .then((res) => res.data),
+    enabled: !!user?.accountId
+  })
+
+  const transactions = useQuery({
+    queryKey: ["transactions"],
+    queryFn: () => axios.get(`/api/accounts/transactions?accountId=${user?.accountId}`).then((res) => res.data),
+  })
 
   if (!user) {
     return <div>Loading...</div>
@@ -164,7 +179,7 @@ export default function DashboardPage() {
                   <CardTitle>Recent Transactions</CardTitle>
                 </CardHeader>
                 <CardContent className="p-0">
-                  <RecentTransactions />
+                  <RecentTransactions accountId={user.accountId} />
                 </CardContent>
                 <CardFooter className="border-t bg-muted/30 px-6 py-4">
                   <Button variant="outline" asChild className="w-full">
@@ -202,7 +217,7 @@ export default function DashboardPage() {
                 <CardDescription>View and monitor all your transactions across accounts</CardDescription>
               </CardHeader>
               <CardContent>
-                <RecentTransactions extended />
+                <RecentTransactions extended accountId={user.accountId} />
               </CardContent>
             </Card>
           </TabsContent>

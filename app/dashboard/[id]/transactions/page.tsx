@@ -6,11 +6,29 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { SidebarTrigger } from "@/components/ui/sidebar"
-
+import { useUser } from "@/context/user-context"
 // Reuse the RecentTransactions component with extended view
 import { RecentTransactions } from "@/components/recent-transactions"
+import { useQuery } from "@tanstack/react-query"
+import axios from "axios"
 
 export default function TransactionsPage() {
+  const { user } = useUser();
+
+  if (!user) {
+    return <div>Loading...</div>
+  }
+
+  const accounts = useQuery({
+    queryKey: ["accounts", user.accountId],
+    queryFn: () => axios.get(`/api/accounts/details?accountId=${user.accountId}`).then((res) => res.data),
+  })
+
+  const transactions = useQuery({
+    queryKey: ["transactions", user.accountId],
+    queryFn: () => axios.get(`/api/accounts/transactions?accountId=${user.accountId}`).then((res) => res.data),
+  })
+
   return (
     <div className="flex flex-col">
       <header className="flex h-14 lg:h-[60px] items-center gap-4 border-b bg-background px-6">
@@ -47,9 +65,11 @@ export default function TransactionsPage() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">All Accounts</SelectItem>
-                    <SelectItem value="checking">Chase Checking</SelectItem>
-                    <SelectItem value="savings">Chase Savings</SelectItem>
-                    <SelectItem value="investment">Fidelity Investment</SelectItem>
+                    {accounts.data?.accounts?.map((account: any) => (
+                      <SelectItem key={account.account_id} value={account.account_id}>
+                        {account.name}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
@@ -91,7 +111,7 @@ export default function TransactionsPage() {
             </Button>
           </CardHeader>
           <CardContent>
-            <RecentTransactions extended />
+            <RecentTransactions extended accountId={user.accountId} />
           </CardContent>
         </Card>
       </div>

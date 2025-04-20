@@ -37,7 +37,7 @@ model Account {
   userId String
   user   User   @relation(fields: [userId], references: [id])
 
-  bankAccount BankAccount[]
+  bankAccount BankAccount?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -52,7 +52,7 @@ model BankAccount {
   lastFour String?
   accessToken String? @unique
 
-  accountId String
+  accountId String @unique
   account   Account   @relation(fields: [accountId], references: [id])
 
   createdAt DateTime @default(now())
