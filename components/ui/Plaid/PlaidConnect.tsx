@@ -3,14 +3,18 @@
 import { useEffect, useState } from "react";
 import { createClient } from "@/utils/supabase/client";
 import { usePlaidLink } from "react-plaid-link";
+import { DollarSign, Loader2 } from "lucide-react";
+import { Button } from "../button";
 
-export default function PlaidConnect() {
+export default function PlaidConnect({accountId}: {accountId: string}) {
   const supabase = createClient();
   const [linkToken, setLinkToken] = useState<string | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
 
-  useEffect(() => {
-    const fetchUserAndToken = async () => {
+  const fetchUserAndToken = async () => {
+    setIsLoading(true);
+    try {
       const {
         data: { user },
         error,
@@ -25,11 +29,15 @@ export default function PlaidConnect() {
 
       const res = await fetch("/api/create-link-token");
       const data = await res.json();
+      console.log("Link token: ", data);
       setLinkToken(data.link_token);
-    };
-
-    fetchUserAndToken();
-  }, []);
+    } catch (error) {
+      console.error("Error fetching user and token:", error);
+    } finally {
+      open();
+      setIsLoading(false);
+    }
+  };
 
   const { open, ready } = usePlaidLink({
     token: linkToken!,
@@ -40,7 +48,7 @@ export default function PlaidConnect() {
         const response = await fetch("/api/exchange-public-token", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ public_token, user_id: userId }),
+          body: JSON.stringify({ public_token, user_id: userId, accountId: accountId }),
         });
 
         const { data } = await response.json();
@@ -52,13 +60,30 @@ export default function PlaidConnect() {
     },
   });
 
+  const handleClick = async () => {
+    if (!linkToken) {
+      await fetchUserAndToken();
+    }
+    if (ready && linkToken) {
+      open();
+    }
+  };
+
   return (
-    <button
-      onClick={() => open()}
-      disabled={!ready || !linkToken}
-      className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto cursor-pointer"
+    <Button
+      onClick={handleClick}
+      disabled={isLoading}
+      className="gradient-bg text-white shadow-sm"
     >
-      Connect Bank Account
-    </button>
+      <DollarSign className="mr-2 h-4 w-4" />
+      {isLoading ? (
+        <>
+          <Loader2 className="h-4 w-4 animate-spin" />
+          Connecting...
+        </>
+      ) : (
+        "Connect Bank Account"
+      )}
+    </Button>
   );
 }

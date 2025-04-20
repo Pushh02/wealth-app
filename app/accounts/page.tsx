@@ -8,6 +8,7 @@ import axios from "axios"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { LinkAccountDialog } from "@/components/link-account-dialog"
+import { useUser } from "@/context/user-context"
 
 interface Account {
   id: string
@@ -16,9 +17,12 @@ interface Account {
   balance: number
   lastFour: string
   institution: string
+  email: string
+  role: string
 }
 
 export default function AccountsPage() {
+  const { setUser } = useUser()
 
   //fetch accounts useing useQuery
   const { data: accounts, isLoading } = useQuery({
@@ -32,6 +36,15 @@ export default function AccountsPage() {
 
   console.log(accounts);
 
+  const handleViewDetails = (account: any) => {
+    console.log(account);
+    setUser({
+      email: accounts.userEmail,
+      role: account.userRole as "primary" | "approver",
+      accountId: account.id
+    })
+  }
+
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-muted/30 p-4">
       <div className="w-full max-w-7xl">
@@ -40,7 +53,7 @@ export default function AccountsPage() {
           <p className="text-muted-foreground mt-1">Manage and monitor all your linked accounts in one place.</p>
         </div>
 
-        {accounts.length === 0 ? (
+        {accounts.accounts.length === 0 ? (
           <div className="flex flex-col items-center justify-center space-y-6 py-12">
             <div className="h-24 w-24 rounded-full bg-primary/10 flex items-center justify-center">
               <Wallet className="h-12 w-12 text-primary" />
@@ -60,7 +73,7 @@ export default function AccountsPage() {
             </div>
 
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-              {accounts.map((account: Account) => (
+              {accounts.accounts.map((account: Account) => (
                 <Card key={account.id} className="overflow-hidden border-0 shadow-lg">
                   <CardHeader className="border-b bg-muted/30 px-6">
                     <div className="flex items-center justify-between">
@@ -74,7 +87,7 @@ export default function AccountsPage() {
                     </div>
                   </CardHeader>
                   <CardFooter className="border-t bg-muted/30 px-6 py-4">
-                    <Button variant="outline" asChild className="w-full">
+                    <Button variant="outline" asChild className="w-full" onClick={() => handleViewDetails(account)}>
                       <Link href={`/dashboard/${account.id}`}>
                         View Details
                         <ArrowRight className="ml-2 h-4 w-4" />

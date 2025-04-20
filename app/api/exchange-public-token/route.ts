@@ -5,7 +5,7 @@ import { createClient } from "@/utils/supabase/server";
 import { encrypt } from "@/utils/Cryptography/encrypt";
 
 export async function POST(req: NextRequest) {
-  const { public_token } = await req.json();
+  const { public_token, accountId } = await req.json();
 
   console.log("public_token", public_token);
   if (!public_token || public_token.trim() === "") {
@@ -49,11 +49,18 @@ export async function POST(req: NextRequest) {
 
     const encryptedToken = encrypt(accessToken);
 
-    const userAccount = await prisma.user.findUnique({
+    const userAccount = await prisma.user.findFirst({
       where: {
-        id: user.id,
+        email: {
+          equals: user.email,
+          mode: "insensitive",
+        },
+        accounts: {
+          some: {
+            id: accountId,
+          },
+        },
       },
-      
     });
 
     if (!userAccount) {
@@ -74,6 +81,17 @@ export async function POST(req: NextRequest) {
     });
 
     const account = accountsResponse.data.accounts[0];
+
+    await prisma.bankAccount.create({
+      data: {
+        accountId: accountId,
+        accessToken: encryptedToken,
+        name: account.name,
+        institution: account.name,
+        balance: account.balances.current,
+        lastFour: account.mask,
+      },
+    });
 
     const transactionResponse = await plaidClient.transactionsGet({
       access_token: accessToken,

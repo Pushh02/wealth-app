@@ -49,6 +49,7 @@ model BankAccount {
   institution String
 
   balance Float?
+  lastFour String?
   accessToken String? @unique
 
   accountId String

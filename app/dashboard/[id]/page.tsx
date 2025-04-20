@@ -20,7 +20,8 @@ import { AccountsOverview } from "@/components/accounts-overview"
 import { RecentTransactions } from "@/components/recent-transactions"
 import { FraudAlerts } from "@/components/fraud-alerts"
 import { PendingApprovals } from "@/components/pending-approvals"
-
+import { useUser } from "@/context/user-context"
+import PlaidConnect from "@/components/ui/Plaid/PlaidConnect"
 // Mock user data - in a real app, this would come from authentication
 const mockUser = {
   name: "John Doe",
@@ -28,7 +29,12 @@ const mockUser = {
 }
 
 export default function DashboardPage() {
-  const isApprover = mockUser.role === "approver"
+  const { user } = useUser()
+  const isApprover = user?.role === "approver"
+
+  if (!user) {
+    return <div>Loading...</div>
+  }
 
   return (
     <div className="flex flex-col">
@@ -52,13 +58,11 @@ export default function DashboardPage() {
       <div className="flex-1 space-y-4 p-6">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
           <div>
-            <h2 className="text-3xl font-bold tracking-tight gradient-text">Welcome back, {mockUser.name}</h2>
+            <h2 className="text-3xl font-bold tracking-tight gradient-text">Welcome back, {user.name ? user.name.charAt(0).toUpperCase() + user.name.slice(1) : "User"}</h2>
             <p className="text-muted-foreground mt-1">Here's what's happening with your accounts today.</p>
           </div>
           {!isApprover && (
-            <Button className="gradient-bg text-white shadow-lg">
-              <Plus className="mr-2 h-4 w-4" /> Link New Account
-            </Button>
+            <PlaidConnect accountId={user.accountId} />
           )}
         </div>
 

@@ -39,34 +39,32 @@ import {
   SidebarMenuItem,
   SidebarRail,
 } from "@/components/ui/sidebar"
-
-// Mock user data - in a real app, this would come from authentication
-const mockUser = {
-  name: "John Doe",
-  email: "john.doe@example.com",
-  role: "primary", // or "approver"
-  avatar: "/placeholder.svg?height=32&width=32",
-}
-
-// Navigation items for Primary User
-const primaryNavItems = [
-  { name: "Dashboard", href: "/dashboard", icon: Home },
-  { name: "Transactions", href: "/dashboard/transactions", icon: CreditCard },
-  { name: "Fraud Alerts", href: "/dashboard/fraud-alerts", icon: AlertTriangle },
-  { name: "Dual Authorization", href: "/dashboard/dual-auth", icon: Shield },
-  { name: "Audit Log", href: "/dashboard/audit-log", icon: FileText },
-]
-
-// Navigation items for Approver
-const approverNavItems = [
-  { name: "Dashboard", href: "/dashboard", icon: Home },
-  { name: "Transaction Approval", href: "/dashboard/approval", icon: ClipboardList },
-  { name: "Audit Log", href: "/dashboard/audit-log", icon: FileText },
-]
+import { useUser } from "@/context/user-context"
 
 export function DashboardSidebar() {
   const pathname = usePathname()
-  const isApprover = mockUser.role === "approver"
+  const { user } = useUser()
+  const isApprover = user?.role === "approver"
+  
+  // Extract user ID from the pathname
+  const userId = pathname.split('/')[2] || ''
+  
+  // Navigation items for Primary User
+  const primaryNavItems = [
+    { name: "Dashboard", href: `/dashboard/${userId}`, icon: Home },
+    { name: "Transactions", href: `/dashboard/${userId}/transactions`, icon: CreditCard },
+    { name: "Fraud Alerts", href: `/dashboard/${userId}/fraud-alerts`, icon: AlertTriangle },
+    { name: "Dual Authorization", href: `/dashboard/${userId}/dual-auth`, icon: Shield },
+    { name: "Audit Log", href: `/dashboard/${userId}/audit-log`, icon: FileText },
+  ]
+
+  // Navigation items for Approver
+  const approverNavItems = [
+    { name: "Dashboard", href: `/dashboard/${userId}`, icon: Home },
+    { name: "Transaction Approval", href: `/dashboard/${userId}/approval`, icon: ClipboardList },
+    { name: "Audit Log", href: `/dashboard/${userId}/audit-log`, icon: FileText },
+  ]
+
   const navItems = isApprover ? approverNavItems : primaryNavItems
 
   return (
@@ -136,12 +134,12 @@ export function DashboardSidebar() {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
             <Avatar className="border-2 border-primary/10">
-              <AvatarImage src={mockUser.avatar} alt={mockUser.name} />
-              <AvatarFallback className="bg-primary/10 text-primary">{mockUser.name.charAt(0)}</AvatarFallback>
+              <AvatarImage src="/placeholder.svg?height=32&width=32" alt={user?.name || ''} />
+              <AvatarFallback className="bg-primary/10 text-primary">{user?.name?.charAt(0) || ''}</AvatarFallback>
             </Avatar>
             <div className="space-y-0.5">
-              <p className="text-sm font-medium">{mockUser.name}</p>
-              <p className="text-xs text-muted-foreground capitalize">{mockUser.role} User</p>
+              <p className="text-sm font-medium">{user?.name}</p>
+              <p className="text-xs text-muted-foreground capitalize">{user?.role} User</p>
             </div>
           </div>
           <DropdownMenu>

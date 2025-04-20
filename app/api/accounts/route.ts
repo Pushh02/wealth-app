@@ -32,10 +32,7 @@ export async function GET(request: NextRequest) {
   });
 
   // remove the accessToken from both arrays
-  let responseAccounts = [...accounts, ...approverAccounts].map((account) => {
-    const { accessToken, ...rest } = account;
-    return rest;
-  });
+  let responseAccounts = [...accounts, ...approverAccounts];
 
   // append the userRole = "approver" to the approverAccounts
   responseAccounts = responseAccounts.map(account => {
@@ -48,12 +45,12 @@ export async function GET(request: NextRequest) {
   // append the userRole = "user" to the accounts
   responseAccounts = responseAccounts.map(account => {
     if (accounts.some(a => a.id === account.id)) {
-      return { ...account, userRole: "user" };
+      return { ...account, userRole: "primary" };
     }
     return account;
   });
 
-  return NextResponse.json(responseAccounts, { status: 200 });
+  return NextResponse.json({ accounts: responseAccounts, userEmail: user.email }, { status: 200 });
 }
 
 export async function POST(request: NextRequest) {
