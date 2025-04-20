@@ -23,8 +23,8 @@ export async function login(formData: { email: string; password: string }) {
     redirect("/error");
   }
 
-  revalidatePath("/dashboard", "layout");
-  redirect("/dashboard");
+  revalidatePath("/accounts", "layout");
+  redirect("/accounts");
 }
 
 export async function signup(formData: FormData) {
