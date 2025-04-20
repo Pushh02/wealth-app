@@ -93,11 +93,8 @@ export default function DualAuthPage() {
                       <SelectValue placeholder="Select transaction types" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="transfer">Transfer</SelectItem>
-                      <SelectItem value="wire">Wire</SelectItem>
-                      <SelectItem value="international">International Transfer</SelectItem>
-                      <SelectItem value="investment">Investment</SelectItem>
-                      <SelectItem value="withdrawal">Withdrawal</SelectItem>
+                      <SelectItem value="transfer">Online</SelectItem>
+                      <SelectItem value="wire">In Store</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>

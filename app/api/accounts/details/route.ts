@@ -47,7 +47,7 @@ export async function GET(request: NextRequest) {
         }
 
         const response = await plaidClient.accountsGet({
-            access_token: decrypt(account.bankAccount[0].accessToken || ""),
+            access_token: decrypt(account.bankAccount?.accessToken || ""),
         });
 
         const balance = response.data.accounts.map((account) => {

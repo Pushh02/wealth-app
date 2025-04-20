@@ -59,7 +59,7 @@ export async function GET(request: NextRequest) {
 
     try {
         const response = await plaidClient.transactionsGet({
-            access_token: decrypt(account.bankAccount[0].accessToken || ""),
+            access_token: decrypt(account.bankAccount?.accessToken || ""),
             start_date: startDate,
             end_date: endDate,
             options: {
