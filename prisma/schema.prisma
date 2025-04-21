@@ -27,8 +27,8 @@ model User {
   accounts Account[]
   approverAccounts Account[] @relation("AccountApprovers")
 
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  createdAt     DateTime? @default(now())
+  updatedAt     DateTime? @updatedAt
 }
 
 model Account {
@@ -56,7 +56,8 @@ model BankAccount {
   balance Float?
   lastFour String?
   accessToken String? @unique
-
+  itemId String? @unique
+  
   accountId String @unique
   account   Account   @relation(fields: [accountId], references: [id])
 
@@ -89,6 +90,7 @@ model AlertTransactions {
   amount Float
   transactionType String
   category String
+  transactionId String
 
   bankAccountId String
   bankAccount   BankAccount   @relation(fields: [bankAccountId], references: [id])

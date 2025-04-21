@@ -26,6 +26,8 @@ export async function POST(req: NextRequest) {
       public_token,
     });
     const accessToken = response.data.access_token;
+    const itemId = response.data.item_id;
+    console.log('response from exchange-public-token', response.data)
 
     const supabase = await createClient();
 
@@ -86,6 +88,7 @@ export async function POST(req: NextRequest) {
       data: {
         accountId: accountId,
         accessToken: encryptedToken,
+        itemId: itemId,
         name: account.name,
         institution: account.name,
         balance: account.balances.current,

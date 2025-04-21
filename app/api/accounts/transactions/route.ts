@@ -3,22 +3,12 @@ import { NextRequest, NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import plaidClient from "@/lib/plaid";
 import { decrypt } from "@/utils/Cryptography/decrypt";
+import { Transaction, RemovedTransaction } from "plaid";
 
 export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const accountId = searchParams.get("accountId");
-    let startDate = searchParams.get("startDate");
-    let endDate = searchParams.get("endDate");
-    const offset = searchParams.get("offset") ? parseInt(searchParams.get("offset")!) : 0;
-    const accountIds = searchParams.get("accountIds");
-
-    if (!startDate) {
-        startDate = new Date(new Date().setDate(new Date().getDate() - 30)).toISOString().slice(0, 10);
-    }
-
-    if (!endDate) {
-        endDate = new Date().toISOString().slice(0, 10);
-    }
+    const cursor = searchParams.get("cursor");
 
     if (!accountId) {
         return NextResponse.json({ error: "Account ID is required" }, { status: 400 });
@@ -57,26 +47,47 @@ export async function GET(request: NextRequest) {
         return NextResponse.json({ error: "Account not found" }, { status: 404 });
     }
 
-    try {
-        const response = await plaidClient.transactionsGet({
-            access_token: decrypt(account.bankAccount?.accessToken || ""),
-            start_date: startDate,
-            end_date: endDate,
-            options: {
-                offset: offset,
-                account_ids: accountIds ? accountIds.split(",") : undefined,
-            },
-        });
+    if (!account.bankAccount?.accessToken) {
+        return NextResponse.json({ error: "Bank account access token not found" }, { status: 404 });
+    }
 
-        const total_transactions = response.data.total_transactions;
-        const has_more = response.data.transactions.length < total_transactions;
-        const next_offset = has_more ? offset + response.data.transactions.length : null;
+    try {
+        // Initialize arrays to store transactions
+        let added: Transaction[] = [];
+        let modified: Transaction[] = [];
+        let removed: RemovedTransaction[] = [];
+        let hasMore = true;
+        let currentCursor = cursor || undefined;
+
+        // Iterate through each page of new transaction updates
+        while (hasMore) {
+            const response = await plaidClient.transactionsSync({
+                access_token: decrypt(account.bankAccount.accessToken),
+                cursor: currentCursor,
+            });
+
+            const data = response.data;
+
+            // Add this page of results
+            added = added.concat(data.added || []);
+            modified = modified.concat(data.modified || []);
+            removed = removed.concat(data.removed || []);
+
+            hasMore = data.has_more;
+            currentCursor = data.next_cursor;
+
+            // If we have a cursor from the request, only fetch one page
+            if (cursor) {
+                hasMore = false;
+            }
+        }
 
         return NextResponse.json({
-            transactions: response.data.transactions,
-            total_transactions,
-            has_more,
-            next_offset,
+            added,
+            modified,
+            removed,
+            has_more: currentCursor !== undefined,
+            next_cursor: currentCursor,
         }, { status: 200 });
     } catch (error) {
         console.error("Error fetching transactions:", error);

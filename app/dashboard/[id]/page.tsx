@@ -10,6 +10,7 @@ import {
   Bell,
   Search,
   ArrowUpRight,
+  TestTube,
 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
@@ -68,6 +69,20 @@ export default function DashboardPage() {
           <Button variant="ghost" size="icon" className="rounded-full">
             <Search className="h-5 w-5" />
           </Button>
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            className="rounded-full"
+            onClick={() => {
+              axios.get("/api/test").then((res) => {
+                console.log("Test response:", res.data);
+              }).catch((error) => {
+                console.error("Test error:", error);
+              });
+            }}
+          >
+            <TestTube className="h-5 w-5" />
+          </Button>
         </div>
       </header>
       <div className="flex-1 space-y-4 p-6">
@@ -80,6 +95,11 @@ export default function DashboardPage() {
             <PlaidConnect accountId={user.accountId} />
           )}
         </div>
+        <Button onClick={() => {
+          axios.post("/api/exchange-public-token", {
+            accountId: user.accountId,
+          })
+        }}>Test</Button>
 
         <Tabs defaultValue="overview" className="space-y-6">
           <TabsList className="bg-muted/50 p-1">

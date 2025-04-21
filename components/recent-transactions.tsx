@@ -6,15 +6,7 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Button } from "@/components/ui/button"
 import { usePathname } from "next/navigation"
-
-interface Transaction {
-  transaction_id: string
-  merchant_name: string
-  amount: number
-  date: string
-  category: string[]
-  status: string
-}
+import { Transaction } from "plaid"
 
 interface RecentTransactionsProps {
   extended?: boolean
@@ -25,23 +17,23 @@ export function RecentTransactions({ extended = false, accountId }: RecentTransa
   const [transactions, setTransactions] = useState<Transaction[]>([])
   const [loading, setLoading] = useState(false)
   const [hasMore, setHasMore] = useState(false)
-  const [nextOffset, setNextOffset] = useState<number | null>(null)
+  const [nextCursor, setNextCursor] = useState<string | undefined>(undefined)
   const pathname = usePathname()
 
-  const fetchTransactions = async (offset = 0) => {
+  const fetchTransactions = async (cursor?: string) => {
     setLoading(true)
     try {
-      const response = await fetch(`/api/accounts/transactions?accountId=${accountId}&offset=${offset}`)
+      const response = await fetch(`/api/accounts/transactions?accountId=${accountId}${cursor ? `&cursor=${cursor}` : ''}`)
       const data = await response.json()
       
-      if (offset === 0) {
-        setTransactions(data.transactions)
+      if (!cursor) {
+        setTransactions(data.added || [])
       } else {
-        setTransactions(prev => [...prev, ...data.transactions])
+        setTransactions(prev => [...prev, ...(data.added || [])])
       }
       
       setHasMore(data.has_more)
-      setNextOffset(data.next_offset)
+      setNextCursor(data.next_cursor)
     } catch (error) {
       console.error("Error fetching transactions:", error)
     } finally {
@@ -54,8 +46,8 @@ export function RecentTransactions({ extended = false, accountId }: RecentTransa
   }, [accountId])
 
   const loadMore = () => {
-    if (nextOffset !== null) {
-      fetchTransactions(nextOffset)
+    if (nextCursor) {
+      fetchTransactions(nextCursor)
     }
   }
 
@@ -87,7 +79,7 @@ export function RecentTransactions({ extended = false, accountId }: RecentTransa
         </TableHeader>
         <TableBody>
           {displayTransactions.map((transaction) => {
-            const Icon = getCategoryIcon(transaction.category)
+            const Icon = getCategoryIcon(transaction.category || [])
             return (
               <TableRow key={transaction.transaction_id} className="transaction-row">
                 {extended && (
@@ -99,11 +91,11 @@ export function RecentTransactions({ extended = false, accountId }: RecentTransa
                   <div className="flex items-center gap-3">
                     <div
                       className={`rounded-full p-2 ${
-                        transaction.category.includes("Shopping")
+                        transaction.category?.includes("Shopping")
                           ? "bg-purple-100 text-purple-700"
-                          : transaction.category.includes("Income")
+                          : transaction.category?.includes("Income")
                             ? "bg-green-100 text-green-700"
-                            : transaction.category.includes("Food and Drink")
+                            : transaction.category?.includes("Food and Drink")
                               ? "bg-orange-100 text-orange-700"
                               : "bg-gray-100 text-gray-700"
                       }`}
@@ -111,13 +103,13 @@ export function RecentTransactions({ extended = false, accountId }: RecentTransa
                       <Icon className="h-4 w-4" />
                     </div>
                     <div>
-                      <span className="font-medium">{transaction.merchant_name || "Unknown"}</span>
-                      {!extended && <p className="text-xs text-muted-foreground">{transaction.category[0]}</p>}
+                      <span className="font-medium">{transaction.merchant_name || transaction.name || "Unknown"}</span>
+                      {!extended && <p className="text-xs text-muted-foreground">{transaction.category?.[0] || "Uncategorized"}</p>}
                     </div>
                   </div>
                 </TableCell>
                 <TableCell>{new Date(transaction.date).toLocaleDateString()}</TableCell>
-                {extended && <TableCell>{transaction.category[0]}</TableCell>}
+                {extended && <TableCell>{transaction.category?.[0] || "Uncategorized"}</TableCell>}
                 <TableCell className="text-right">
                   <div
                     className={`flex items-center justify-end gap-1 font-medium ${transaction.amount > 0 ? "text-green-600" : ""}`}
@@ -131,8 +123,8 @@ export function RecentTransactions({ extended = false, accountId }: RecentTransa
                   </div>
                 </TableCell>
                 <TableCell className="text-right">
-                  <span className={`status-badge ${transaction.status === "pending" ? "flagged" : "completed"}`}>
-                    {transaction.status === "pending" ? "Pending" : "Completed"}
+                  <span className={`status-badge ${transaction.pending ? "pending" : "completed"}`}>
+                    {transaction.pending ? "Pending" : "Completed"}
                   </span>
                 </TableCell>
               </TableRow>
