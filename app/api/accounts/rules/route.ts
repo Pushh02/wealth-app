@@ -19,6 +19,16 @@ export async function GET(request: NextRequest) {
             where: {
                 accountId: accountId,
             },
+            include: {
+                account: {
+                    include: {
+                        approvers: true,
+                    },
+                },
+            },
+            orderBy: {
+                createdAt: "desc",
+            },
         });
 
         return NextResponse.json(rules);
@@ -40,15 +50,32 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
         }
 
-        const { name, threshold, transactionType, description } = await request.json();
+        const { name, threshold, isActive, description } = await request.json();
+
+        if (!name || !threshold || !description) {
+            return NextResponse.json({ error: "Missing required fields", details: { name, threshold, description } }, { status: 400 });
+        }
+
+        if (isActive) {
+            await prisma.rules.updateMany({
+                where: {
+                    accountId,
+                    isActive: true,
+                },
+                data: {
+                    isActive: false,
+                },
+            });
+            
+        }
 
         const rule = await prisma.rules.create({
             data: {
                 name,
                 threshold,
-                transactionType,
                 description,
                 accountId,
+                isActive,
             },
         });
 
@@ -61,21 +88,25 @@ export async function POST(request: NextRequest) {
 export async function PUT(request: NextRequest) {
     try {
         const { searchParams } = new URL(request.url);
-        const accountId = searchParams.get("accountId");
+        const ruleId = searchParams.get("ruleId");
         const user = await verifyUser();
-
-        if (!accountId) {
-            return NextResponse.json({ error: "Account ID is required" }, { status: 400 });
+        if (!ruleId) {
+            return NextResponse.json({ error: "Rule ID is required" }, { status: 400 });
         }
         if (!user) {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
         }
 
-        const { id, name, threshold, transactionType, description } = await request.json();
+        const { name, threshold, description } = await request.json();
+
+        if (!name || !threshold || !description) {
+            return NextResponse.json({ error: "Missing required fields", details: { name, threshold, description } }, { status: 400 });
+        }
+        console.log(name, threshold, description);
 
         const rule = await prisma.rules.update({
-            where: { id },
-            data: { name, threshold, transactionType, description },
+            where: { id: ruleId },
+            data: { name, threshold: parseFloat(threshold), description },
         });
 
         return NextResponse.json(rule);
@@ -88,18 +119,17 @@ export async function DELETE(request: NextRequest) {
     try {
         const { searchParams } = new URL(request.url);
         const accountId = searchParams.get("accountId");
+        const ruleId = searchParams.get("ruleId");
         const user = await verifyUser();
 
-        if (!accountId) {
-            return NextResponse.json({ error: "Account ID is required" }, { status: 400 });
+        if (!accountId || !ruleId) {
+            return NextResponse.json({ error: "Account ID and Rule ID are required" }, { status: 400 });
         }
         if (!user) {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
         }
 
-        const { id } = await request.json();
-
-        await prisma.rules.delete({ where: { id } });
+        await prisma.rules.delete({ where: { id: ruleId, accountId } });
 
         return NextResponse.json({ message: "Rule deleted successfully" });
     } catch (error) {

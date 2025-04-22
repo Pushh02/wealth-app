@@ -71,12 +71,12 @@ model Rules {
   id String @id @default(uuid())
   name String
   threshold Float
-  transactionType String
+  transactionType String?
 
   accountId String
   account   Account   @relation(fields: [accountId], references: [id])
 
-  isActive Boolean @default(true)
+  isActive Boolean @default(false)
   description String
 
   alertTransactions AlertTransactions[]
