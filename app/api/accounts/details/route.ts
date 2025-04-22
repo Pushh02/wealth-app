@@ -35,7 +35,10 @@ export async function GET(request: NextRequest) {
         const account = await prisma.account.findUnique({
             where: {
                 id: accountId,
-                userId: userData.id,
+                OR: [
+                    { userId: userData.id },
+                    { approvers: { some: { id: userData.id } } },
+                ],
             },
             include: {
                 bankAccount: true,

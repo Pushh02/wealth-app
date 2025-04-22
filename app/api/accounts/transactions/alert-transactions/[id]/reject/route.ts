@@ -9,7 +9,6 @@ export async function POST(
     try {
         const transactionId = (await params).id
         const user = await verifyUser()
-        console.log("Attempting to approve transaction:", transactionId)
 
         if (!user) {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
@@ -51,6 +50,7 @@ export async function POST(
                         }
                     }
                 }
+                
             }
         })
 
@@ -61,24 +61,24 @@ export async function POST(
             }, { status: 404 })
         }
 
-        const isAlreadyApproved = transaction.approvedBy.some(user => user === userData.id)
+        const isAlreadyRejected = transaction.rejectedBy.some(user => user === userData.id)
 
-        if (isAlreadyApproved) {
+        if (isAlreadyRejected) {
             return NextResponse.json({
-                error: "This transaction has already been approved"
+                error: "This transaction has already been rejected"
             }, { status: 400 })
         }
 
-        const approvedBy = [...transaction.approvedBy, userData.id]
+        const rejectedBy = [...transaction.rejectedBy, userData.id]
 
-        const isApprovedByAll = approvedBy.every(user => transaction.bankAccount.account.approvers.some(approver => approver.id === user))
+        const isRejectedByAll = rejectedBy.every(user => transaction.bankAccount.account.approvers.some(approver => approver.id === user))
 
         // Update the transaction to mark it as approved
         await prisma.alertTransactions.update({
             where: { id: transactionId },
             data: {
-                isApproved: isApprovedByAll,
-                approvedBy: {
+                isRejected: isRejectedByAll,
+                rejectedBy: {
                     push: userData.id
                 }
             }

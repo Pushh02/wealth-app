@@ -6,23 +6,49 @@ export async function GET(request: NextRequest) {
     try {
         const { searchParams } = new URL(request.url);
         const accountId = searchParams.get("accountId");
+        const page = parseInt(searchParams.get("page") || "1");
+        const limit = parseInt(searchParams.get("limit") || "10");
 
         if (!accountId) {
             return NextResponse.json({ error: "Account ID is required" }, { status: 400 });
         }
 
-        const alertTransactions = await prisma.alertTransactions.findMany({
-            where: {
-                bankAccount: {
-                    accountId: accountId,
-                },
-            },
-            include: {
-                violatedRule: true,
-            },
-        });
+        const skip = (page - 1) * limit;
 
-        return NextResponse.json({ alertTransactions }, { status: 200 });
+        const [alertTransactions, total] = await Promise.all([
+            prisma.alertTransactions.findMany({
+                where: {
+                    bankAccount: {
+                        accountId: accountId,
+                    },
+                },
+                include: {
+                    violatedRule: true,
+                },
+                skip,
+                take: limit,
+                orderBy: {
+                    createdAt: 'desc'
+                }
+            }),
+            prisma.alertTransactions.count({
+                where: {
+                    bankAccount: {
+                        accountId: accountId,
+                    },
+                },
+            })
+        ]);
+
+        return NextResponse.json({ 
+            alertTransactions,
+            pagination: {
+                total,
+                page,
+                limit,
+                totalPages: Math.ceil(total / limit)
+            }
+        }, { status: 200 });
     } catch (error) {
         console.error("Error getting alert transactions:", error);
         return NextResponse.json({ error: "Failed to get alert transactions" }, { status: 500 });

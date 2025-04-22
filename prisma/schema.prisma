@@ -87,6 +87,7 @@ model Rules {
 
 model AlertTransactions {
   id String @id @default(uuid())
+  name String @default("Test Transaction")
   amount Float
   transactionType String
   category String

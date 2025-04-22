@@ -31,7 +31,7 @@ export default function DashboardPage() {
 
   const { data: accountDetails, isLoading: accountDetailsLoading } = useQuery({
     queryKey: ["accountDetails", user?.accountId],
-    queryFn: () => 
+    queryFn: () =>
       axios.get(`/api/accounts/details?accountId=${user?.accountId}`)
         .then((res) => res.data),
     enabled: !!user?.accountId
@@ -73,9 +73,9 @@ export default function DashboardPage() {
           <Button variant="ghost" size="icon" className="rounded-full">
             <Search className="h-5 w-5" />
           </Button>
-          <Button 
-            variant="ghost" 
-            size="icon" 
+          <Button
+            variant="ghost"
+            size="icon"
             className="rounded-full"
             onClick={() => {
               axios.get("/api/test").then((res) => {
@@ -190,9 +190,9 @@ export default function DashboardPage() {
               </div>
             </div>
 
-            {isApprover ? <PendingApprovals /> : <AccountsOverview accounts={accountDetails?.balance} />}
+            {isApprover ? <PendingApprovals transactions={accountDetails?.alertTransactions} /> : <AccountsOverview accounts={accountDetails?.balance} />}
 
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-7">
+            {!isApprover && <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-7">
               <Card className="col-span-4 overflow-hidden border-0 shadow-lg">
                 <CardHeader className="border-b bg-muted/30 px-6">
                   <CardTitle>Recent Transactions</CardTitle>
@@ -226,7 +226,7 @@ export default function DashboardPage() {
                   </Button>
                 </CardFooter>
               </Card>
-            </div>
+            </div>}
           </TabsContent>
 
           <TabsContent value="transactions" className="space-y-4">
@@ -260,7 +260,7 @@ export default function DashboardPage() {
                 <CardDescription>Transactions requiring your approval</CardDescription>
               </CardHeader>
               <CardContent>
-                <PendingApprovals extended />
+                <PendingApprovals transactions={accountDetails?.alertTransactions} extended />
               </CardContent>
             </Card>
           </TabsContent>

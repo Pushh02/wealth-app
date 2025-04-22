@@ -57,6 +57,7 @@ export async function POST(req: NextRequest) {
             if ((txn.amount > rule.threshold) && !transactions.some(t => t.transactionId === txn.transaction_id)) {
               await prisma.alertTransactions.create({
                 data: {
+                  name: txn.name,
                   amount: txn.amount,
                   transactionId: txn.transaction_id,
                   transactionType: txn.payment_channel || "unknown",
