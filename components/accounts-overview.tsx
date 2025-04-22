@@ -5,36 +5,73 @@ import Link from "next/link"
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
+import { Skeleton } from "@/components/ui/skeleton"
 
-// Mock accounts data
-const accounts = [
-  {
-    id: "1",
-    name: "Chase Checking",
-    type: "checking",
-    balance: 12450.65,
-    institution: "Chase",
-    lastUpdated: "2 hours ago",
-  },
-  {
-    id: "2",
-    name: "Chase Savings",
-    type: "savings",
-    balance: 25780.42,
-    institution: "Chase",
-    lastUpdated: "2 hours ago",
-  },
-  {
-    id: "3",
-    name: "Fidelity Investment",
-    type: "investment",
-    balance: 7000.82,
-    institution: "Fidelity",
-    lastUpdated: "1 day ago",
-  },
-]
+type Account = {
+    name: string,
+    balance: number,
+    type: string,
+    officialName: string
+}
 
-export function AccountsOverview() {
+export function AccountsOverview({ accounts }: { accounts: Account[] }) {
+  if (!accounts) {
+    return (
+      <Card className="overflow-hidden border-0 shadow-lg">
+        <CardHeader className="border-b bg-muted/30 px-6 flex flex-row items-center justify-between">
+          <div>
+            <Skeleton className="h-6 w-32" />
+            <Skeleton className="h-4 w-48 mt-2" />
+          </div>
+          <Skeleton className="h-10 w-36" />
+        </CardHeader>
+        <CardContent className="p-6">
+          <div className="space-y-6">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="account-card p-4 flex items-center justify-between">
+                <div className="space-y-1">
+                  <div className="flex items-center">
+                    <Skeleton className="h-10 w-10 rounded-full mr-3" />
+                    <div>
+                      <Skeleton className="h-4 w-32" />
+                      <div className="flex items-center mt-1">
+                        <Skeleton className="h-3 w-40" />
+                        <Skeleton className="h-3 w-16 ml-2" />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <Skeleton className="h-6 w-24 ml-auto" />
+                  <Skeleton className="h-3 w-16 mt-1 ml-auto" />
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="mt-8 space-y-4 bg-muted/30 p-4 rounded-xl">
+            <div className="flex items-center justify-between">
+              <Skeleton className="h-4 w-32" />
+              <Skeleton className="h-4 w-24" />
+            </div>
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="space-y-1">
+                <div className="flex items-center justify-between text-sm">
+                  <Skeleton className="h-4 w-24" />
+                  <Skeleton className="h-4 w-12" />
+                </div>
+                <Skeleton className="h-2 w-full rounded-full" />
+              </div>
+            ))}
+          </div>
+        </CardContent>
+        <CardFooter className="border-t bg-muted/30 px-6 py-4">
+          <Skeleton className="h-10 w-full" />
+        </CardFooter>
+      </Card>
+    )
+  }
+
   const totalBalance = accounts.reduce((sum, account) => sum + account.balance, 0)
 
   // Update the AccountsOverview component with a more modern design
@@ -53,7 +90,7 @@ export function AccountsOverview() {
       <CardContent className="p-6">
         <div className="space-y-6">
           {accounts.map((account) => (
-            <div key={account.id} className="account-card p-4 flex items-center justify-between">
+            <div key={account.name} className="account-card p-4 flex items-center justify-between">
               <div className="space-y-1">
                 <div className="flex items-center">
                   <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center mr-3">
@@ -65,7 +102,7 @@ export function AccountsOverview() {
                     <h4 className="font-medium">{account.name}</h4>
                     <div className="flex items-center">
                       <span className="text-xs text-muted-foreground">
-                        {account.institution} • Updated {account.lastUpdated}
+                        {account.officialName} • Updated {new Date().toLocaleDateString()}
                       </span>
                       <span className="ml-2 rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
                         {account.type}
@@ -90,7 +127,7 @@ export function AccountsOverview() {
             <span className="text-sm font-medium">Total: ${totalBalance.toLocaleString()}</span>
           </div>
           {accounts.map((account) => (
-            <div key={account.id} className="space-y-1">
+            <div key={account.name} className="space-y-1">
               <div className="flex items-center justify-between text-sm">
                 <span>{account.name}</span>
                 <span className="font-medium">{Math.round((account.balance / totalBalance) * 100)}%</span>

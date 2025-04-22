@@ -15,6 +15,8 @@ import {
   User,
   Users,
 } from "lucide-react"
+import { useRouter } from "next/navigation"
+import axios from "axios"
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
@@ -44,8 +46,18 @@ import { useUser } from "@/context/user-context"
 export function DashboardSidebar() {
   const pathname = usePathname()
   const { user } = useUser()
+  const router = useRouter()
   const isApprover = user?.role === "approver"
   
+  const handleLogout = async () => {
+    try {
+      await axios.post('/api/auth/logout');
+      router.push('/');
+    } catch (error) {
+      console.error('Logout failed:', error);
+    }
+  };
+
   // Extract user ID from the pathname
   const userId = pathname.split('/')[2] || ''
   
@@ -165,7 +177,7 @@ export function DashboardSidebar() {
                 <span>Notifications</span>
               </DropdownMenuItem>
               <DropdownMenuSeparator />
-              <DropdownMenuItem>
+              <DropdownMenuItem onClick={handleLogout}>
                 <LogOut className="mr-2 h-4 w-4" />
                 <span>Log out</span>
               </DropdownMenuItem>

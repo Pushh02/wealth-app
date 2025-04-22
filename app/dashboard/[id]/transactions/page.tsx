@@ -1,4 +1,5 @@
 "use client"
+import { useState } from "react"
 import { Calendar, Download, Search } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -11,23 +12,42 @@ import { useUser } from "@/context/user-context"
 import { RecentTransactions } from "@/components/recent-transactions"
 import { useQuery } from "@tanstack/react-query"
 import axios from "axios"
+import { DateRangePicker } from "@/components/ui/date-range-picker"
+import { DateRange } from "react-day-picker"
+import { format } from "date-fns"
 
 export default function TransactionsPage() {
   const { user } = useUser();
+  const [searchQuery, setSearchQuery] = useState("")
+  const [selectedAccount, setSelectedAccount] = useState("all")
+  const [selectedCategory, setSelectedCategory] = useState("all")
+  const [dateRange, setDateRange] = useState<DateRange | undefined>()
+
+  const accounts = useQuery({
+    queryKey: ["accounts", user?.accountId],
+    queryFn: () => axios.get(`/api/accounts/details?accountId=${user?.accountId}`).then((res) => res.data),
+    enabled: !!user?.accountId
+  })
+
+  const dateFilteredTransactions = useQuery({
+    queryKey: ["transactions", user?.accountId, dateRange],
+    queryFn: async () => {
+      if (!dateRange?.from || !dateRange?.to) return { added: [] }
+      
+      const startDate = format(dateRange.from, 'yyyy-MM-dd')
+      const endDate = format(dateRange.to, 'yyyy-MM-dd')
+      
+      const response = await axios.get(
+        `/api/accounts/transactions/date-search?accountId=${user?.accountId}&startDate=${startDate}&endDate=${endDate}`
+      )
+      return response.data
+    },
+    enabled: !!user?.accountId && !!dateRange?.from && !!dateRange?.to
+  })
 
   if (!user) {
     return <div>Loading...</div>
   }
-
-  const accounts = useQuery({
-    queryKey: ["accounts", user.accountId],
-    queryFn: () => axios.get(`/api/accounts/details?accountId=${user.accountId}`).then((res) => res.data),
-  })
-
-  const transactions = useQuery({
-    queryKey: ["transactions", user.accountId],
-    queryFn: () => axios.get(`/api/accounts/transactions?accountId=${user.accountId}`).then((res) => res.data),
-  })
 
   return (
     <div className="flex flex-col">
@@ -54,12 +74,18 @@ export default function TransactionsPage() {
                 <Label htmlFor="search-transactions">Search</Label>
                 <div className="relative">
                   <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-                  <Input id="search-transactions" placeholder="Search transactions" className="pl-8" />
+                  <Input 
+                    id="search-transactions" 
+                    placeholder="Search transactions" 
+                    className="pl-8"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                  />
                 </div>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="account">Account</Label>
-                <Select>
+                <Select value={selectedAccount} onValueChange={setSelectedAccount}>
                   <SelectTrigger id="account">
                     <SelectValue placeholder="All Accounts" />
                   </SelectTrigger>
@@ -75,26 +101,23 @@ export default function TransactionsPage() {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="category">Category</Label>
-                <Select>
+                <Select value={selectedCategory} onValueChange={setSelectedCategory}>
                   <SelectTrigger id="category">
                     <SelectValue placeholder="All Categories" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">All Categories</SelectItem>
-                    <SelectItem value="shopping">Shopping</SelectItem>
-                    <SelectItem value="food">Food & Drink</SelectItem>
-                    <SelectItem value="entertainment">Entertainment</SelectItem>
-                    <SelectItem value="transfer">Transfer</SelectItem>
-                    <SelectItem value="income">Income</SelectItem>
+                    <SelectItem value="online">Online</SelectItem>
+                    <SelectItem value="in store">In Store</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="date-range-transactions">Date Range</Label>
-                <div className="relative">
-                  <Calendar className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-                  <Input id="date-range-transactions" placeholder="Select date range" className="pl-8" />
-                </div>
+                <DateRangePicker
+                  value={dateRange}
+                  onChange={setDateRange}
+                />
               </div>
             </div>
           </CardContent>
@@ -111,7 +134,15 @@ export default function TransactionsPage() {
             </Button>
           </CardHeader>
           <CardContent>
-            <RecentTransactions extended accountId={user.accountId} />
+            <RecentTransactions 
+              extended 
+              accountId={user.accountId}
+              searchQuery={searchQuery}
+              selectedAccount={selectedAccount}
+              selectedCategory={selectedCategory}
+              dateRange={dateRange ? { start: dateRange.from!, end: dateRange.to! } : undefined}
+              transactions={dateFilteredTransactions.data?.added}
+            />
           </CardContent>
         </Card>
       </div>

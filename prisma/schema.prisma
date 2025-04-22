@@ -95,12 +95,14 @@ model AlertTransactions {
   bankAccountId String
   bankAccount   BankAccount   @relation(fields: [bankAccountId], references: [id])
 
-  approvedBy String[]
-
   violatedRuleId String?
   violatedRule Rules? @relation(fields: [violatedRuleId], references: [id])
 
-  approved Boolean @default(false)
+  approvedBy String[]
+  isApproved Boolean @default(false)
+
+  rejectedBy String[]
+  isRejected Boolean @default(false)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

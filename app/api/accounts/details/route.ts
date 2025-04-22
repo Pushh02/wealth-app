@@ -54,10 +54,32 @@ export async function GET(request: NextRequest) {
             return {
                 name: account.name,
                 balance: account.balances.current,
+                type: account.subtype,
+                officialName: account.official_name,
             };
         });
 
-        return NextResponse.json({ balance, accounts: response.data.accounts }, { status: 200 });
+        const transaction = await plaidClient.transactionsGet({
+            access_token: decrypt(account.bankAccount?.accessToken || ""),
+            start_date: new Date(new Date().setDate(new Date().getDate() - 30)).toISOString().split('T')[0],
+            end_date: new Date().toISOString().split('T')[0],
+        });
+
+        const alertTransactions = await prisma.alertTransactions.findMany({
+            where: {
+                bankAccountId: account.bankAccount?.id,
+                createdAt: {
+                    gte: new Date(new Date().setDate(new Date().getDate() - 30)),
+                    lte: new Date(),
+                },
+            },
+            include: {
+                violatedRule: true,
+                bankAccount: true,
+            },
+        });
+
+        return NextResponse.json({ balance, accounts: response.data.accounts, transactionsThisMonth: transaction.data.transactions.length, alertTransactions: alertTransactions }, { status: 200 });
     } catch (error) {
         console.error(error);
         return NextResponse.json({ error: "Internal server error" }, { status: 500 });

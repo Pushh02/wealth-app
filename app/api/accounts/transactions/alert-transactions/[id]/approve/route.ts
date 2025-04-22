@@ -56,7 +56,7 @@ export async function POST(request: NextRequest) {
             approvedBy: {
                 push: userData.id
             },
-            approved: isApprovedByAll,
+            isApproved: isApprovedByAll,
         },
     });
 

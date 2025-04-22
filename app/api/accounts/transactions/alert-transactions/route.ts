@@ -76,7 +76,7 @@ export async function POST(request: NextRequest) {
                         accountId: account.id,
                     },
                 },
-                id: transactionId,
+                transactionId: transactionId,
                 amount: amount,
                 transactionType: transactionType,
                 category: category,

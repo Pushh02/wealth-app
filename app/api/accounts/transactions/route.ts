@@ -75,6 +75,7 @@ export async function GET(request: NextRequest) {
 
             hasMore = data.has_more;
             currentCursor = data.next_cursor;
+            console.log("data", data);
 
             // If we have a cursor from the request, only fetch one page
             if (cursor) {

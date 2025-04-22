@@ -5,7 +5,6 @@ import {
   ArrowRight,
   CreditCard,
   DollarSign,
-  Plus,
   Shield,
   Bell,
   Search,
@@ -25,28 +24,33 @@ import { useUser } from "@/context/user-context"
 import PlaidConnect from "@/components/ui/Plaid/PlaidConnect"
 import { useQuery } from "@tanstack/react-query"
 import axios from "axios"
-// Mock user data - in a real app, this would come from authentication
-const mockUser = {
-  name: "John Doe",
-  role: "primary", // or "approver"
-}
 
 export default function DashboardPage() {
   const { user } = useUser()
   const isApprover = user?.role === "approver"
 
-  const { data: balance, isLoading: balanceLoading } = useQuery({
-    queryKey: ["balance", user?.accountId],
+  const { data: accountDetails, isLoading: accountDetailsLoading } = useQuery({
+    queryKey: ["accountDetails", user?.accountId],
     queryFn: () => 
       axios.get(`/api/accounts/details?accountId=${user?.accountId}`)
         .then((res) => res.data),
     enabled: !!user?.accountId
   })
 
-  const transactions = useQuery({
-    queryKey: ["transactions"],
-    queryFn: () => axios.get(`/api/accounts/transactions?accountId=${user?.accountId}`).then((res) => res.data),
-  })
+  const totalBalance = accountDetails?.balance.reduce((acc: number, curr: { balance: number }) => acc + curr.balance, 0)
+  const bankAccounts = {
+    length: accountDetails?.accounts.length,
+    // map the accounts to an object and if the new sub-type arrives, add it to the object and if the subtype already exists increment the count
+    accounts: accountDetails?.accounts.reduce((acc: Record<string, number>, account: any) => {
+      const accountType = account.subtype
+      if (acc[accountType]) {
+        acc[accountType]++
+      } else {
+        acc[accountType] = 1
+      }
+      return acc
+    }, {})
+  }
 
   if (!user) {
     return <div>Loading...</div>
@@ -95,11 +99,6 @@ export default function DashboardPage() {
             <PlaidConnect accountId={user.accountId} />
           )}
         </div>
-        <Button onClick={() => {
-          axios.post("/api/exchange-public-token", {
-            accountId: user.accountId,
-          })
-        }}>Test</Button>
 
         <Tabs defaultValue="overview" className="space-y-6">
           <TabsList className="bg-muted/50 p-1">
@@ -140,7 +139,7 @@ export default function DashboardPage() {
                 <div className="flex justify-between">
                   <div>
                     <p className="text-sm font-medium text-muted-foreground mb-1">Total Balance</p>
-                    <h3 className="text-2xl font-bold">$45,231.89</h3>
+                    <h3 className="text-2xl font-bold">${totalBalance}</h3>
                     <div className="flex items-center mt-1 text-green-600 text-xs font-medium">
                       <ArrowUpRight className="h-3 w-3 mr-1" />
                       +20.1% from last month
@@ -155,8 +154,8 @@ export default function DashboardPage() {
                 <div className="flex justify-between">
                   <div>
                     <p className="text-sm font-medium text-muted-foreground mb-1">Linked Accounts</p>
-                    <h3 className="text-2xl font-bold">4</h3>
-                    <p className="text-xs text-muted-foreground mt-1">2 checking, 1 savings, 1 investment</p>
+                    <h3 className="text-2xl font-bold">{bankAccounts.length || 0}</h3>
+                    <p className="text-xs text-muted-foreground mt-1">{bankAccounts.accounts ? Object.entries(bankAccounts.accounts).map(([key, value]) => `${value} ${key}`).join(", ") : ""}</p>
                   </div>
                   <div className="h-12 w-12 rounded-full bg-green-50 flex items-center justify-center">
                     <CreditCard className="h-6 w-6 text-green-600" />
@@ -169,7 +168,7 @@ export default function DashboardPage() {
                     <p className="text-sm font-medium text-muted-foreground mb-1">
                       {isApprover ? "Pending Approvals" : "Pending Transactions"}
                     </p>
-                    <h3 className="text-2xl font-bold">3</h3>
+                    <h3 className="text-2xl font-bold">{accountDetails?.transactionsThisMonth || 0}</h3>
                     <p className="text-xs text-muted-foreground mt-1">Requires your attention</p>
                   </div>
                   <div className="h-12 w-12 rounded-full bg-blue-50 flex items-center justify-center">
@@ -181,7 +180,7 @@ export default function DashboardPage() {
                 <div className="flex justify-between">
                   <div>
                     <p className="text-sm font-medium text-muted-foreground mb-1">Fraud Alerts</p>
-                    <h3 className="text-2xl font-bold">2</h3>
+                    <h3 className="text-2xl font-bold">{accountDetails?.alertTransactions.length || 0}</h3>
                     <p className="text-xs text-muted-foreground mt-1">Suspicious activities detected</p>
                   </div>
                   <div className="h-12 w-12 rounded-full bg-red-50 flex items-center justify-center">
@@ -191,7 +190,7 @@ export default function DashboardPage() {
               </div>
             </div>
 
-            {isApprover ? <PendingApprovals /> : <AccountsOverview />}
+            {isApprover ? <PendingApprovals /> : <AccountsOverview accounts={accountDetails?.balance} />}
 
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-7">
               <Card className="col-span-4 overflow-hidden border-0 shadow-lg">
@@ -216,7 +215,7 @@ export default function DashboardPage() {
                   <CardDescription>Recent suspicious activities detected</CardDescription>
                 </CardHeader>
                 <CardContent className="p-0">
-                  <FraudAlerts />
+                  <FraudAlerts accountId={user.accountId} />
                 </CardContent>
                 <CardFooter className="border-t bg-muted/30 px-6 py-4">
                   <Button variant="outline" asChild className="w-full">
@@ -249,7 +248,7 @@ export default function DashboardPage() {
                 <CardDescription>Review and manage suspicious activities</CardDescription>
               </CardHeader>
               <CardContent>
-                <FraudAlerts extended />
+                <FraudAlerts extended accountId={user.accountId} />
               </CardContent>
             </Card>
           </TabsContent>

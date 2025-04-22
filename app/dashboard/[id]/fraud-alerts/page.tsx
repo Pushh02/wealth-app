@@ -1,5 +1,6 @@
 "use client"
 import { AlertTriangle, Calendar, Download, Search } from "lucide-react"
+import { useState } from "react"
 
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -7,11 +8,31 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { SidebarTrigger } from "@/components/ui/sidebar"
+import { DateRange } from "react-day-picker"
 
 // Reuse the FraudAlerts component with extended view
 import { FraudAlerts } from "@/components/fraud-alerts"
+import { useUser } from "@/context/user-context"
+import axios from "axios"
+import { useQuery } from "@tanstack/react-query"
+import { DateRangePicker } from "@/components/ui/date-range-picker"
+import { useParams } from "next/navigation";
 
 export default function FraudAlertsPage() {
+  const { user } = useUser();
+  const [searchQuery, setSearchQuery] = useState("")
+  const [severity, setSeverity] = useState("all")
+  const [dateRange, setDateRange] = useState<DateRange | undefined>()
+  const params = useParams();
+  const accountId = params.id as string;
+  console.log("accountId", accountId);
+
+  const fraudAlerts = useQuery({
+    queryKey: ["fraud-alerts", user?.accountId],
+    queryFn: () => axios.get(`/api/accounts/fraud-alert?accountId=${user?.accountId}`).then((res) => res.data),
+    enabled: !!user?.accountId
+  })
+
   return (
     <div className="flex flex-col">
       <header className="flex h-14 lg:h-[60px] items-center gap-4 border-b bg-background px-6">
@@ -42,12 +63,18 @@ export default function FraudAlertsPage() {
                 <Label htmlFor="search-alerts">Search</Label>
                 <div className="relative">
                   <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-                  <Input id="search-alerts" placeholder="Search alerts" className="pl-8" />
+                  <Input 
+                    id="search-alerts" 
+                    placeholder="Search alerts" 
+                    className="pl-8" 
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                  />
                 </div>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="severity">Severity</Label>
-                <Select>
+                <Select value={severity} onValueChange={setSeverity}>
                   <SelectTrigger id="severity">
                     <SelectValue placeholder="All Severities" />
                   </SelectTrigger>
@@ -61,10 +88,10 @@ export default function FraudAlertsPage() {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="date-range-alerts">Date Range</Label>
-                <div className="relative">
-                  <Calendar className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-                  <Input id="date-range-alerts" placeholder="Select date range" className="pl-8" />
-                </div>
+                <DateRangePicker
+                  value={dateRange}
+                  onChange={setDateRange}
+                />
               </div>
             </div>
           </CardContent>
@@ -81,7 +108,13 @@ export default function FraudAlertsPage() {
             </Button>
           </CardHeader>
           <CardContent>
-            <FraudAlerts extended />
+            <FraudAlerts 
+              accountId={accountId}
+              extended={true}
+              searchQuery={searchQuery}
+              severity={severity}
+              dateRange={dateRange ? { start: dateRange.from!, end: dateRange.to! } : undefined}
+            />
           </CardContent>
         </Card>
       </div>
