@@ -42,8 +42,9 @@ import {
   SidebarRail,
 } from "@/components/ui/sidebar"
 import { useUser } from "@/context/user-context"
+import { Badge } from "@/components/ui/badge"
 
-export function DashboardSidebar() {
+export function DashboardSidebar({ pendingAlerts }: { pendingAlerts: number }) {
   const pathname = usePathname()
   const { user } = useUser()
   const router = useRouter()
@@ -65,7 +66,7 @@ export function DashboardSidebar() {
   const primaryNavItems = [
     { name: "Dashboard", href: `/dashboard/${userId}`, icon: Home },
     { name: "Transactions", href: `/dashboard/${userId}/transactions`, icon: CreditCard },
-    { name: "Fraud Alerts", href: `/dashboard/${userId}/fraud-alerts`, icon: AlertTriangle },
+    { name: "Fraud Alerts", href: `/dashboard/${userId}/fraud-alerts`, icon: AlertTriangle, showCount: true },
     { name: "Dual Authorization", href: `/dashboard/${userId}/dual-auth`, icon: Shield },
     { name: "Audit Log", href: `/dashboard/${userId}/audit-log`, icon: FileText },
   ]
@@ -73,7 +74,7 @@ export function DashboardSidebar() {
   // Navigation items for Approver
   const approverNavItems = [
     { name: "Dashboard", href: `/dashboard/${userId}`, icon: Home },
-    { name: "Transaction Approval", href: `/dashboard/${userId}/approval`, icon: ClipboardList },
+    { name: "Transaction Approval", href: `/dashboard/${userId}/approval`, icon: ClipboardList, showCount: true },
     { name: "Audit Log", href: `/dashboard/${userId}/audit-log`, icon: FileText },
   ]
 
@@ -110,6 +111,11 @@ export function DashboardSidebar() {
                     <Link href={item.href}>
                       <item.icon className="h-5 w-5" />
                       <span>{item.name}</span>
+                      {item.showCount && pendingAlerts > 0 && (
+                        <Badge variant="destructive" className="ml-auto">
+                          {pendingAlerts}
+                        </Badge>
+                      )}
                     </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -123,16 +129,8 @@ export function DashboardSidebar() {
           <SidebarGroupContent>
             <SidebarMenu>
               <SidebarMenuItem>
-                <SidebarMenuButton asChild isActive={pathname === "/dashboard/settings"}>
-                  <Link href="/dashboard/settings">
-                    <Settings className="h-5 w-5" />
-                    <span>Settings</span>
-                  </Link>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-              <SidebarMenuItem>
-                <SidebarMenuButton asChild isActive={pathname === "/dashboard/profile"}>
-                  <Link href="/dashboard/profile">
+                <SidebarMenuButton asChild isActive={pathname === `/dashboard/${userId}/profile`}>
+                  <Link href={`/dashboard/${userId}/profile`}>
                     <User className="h-5 w-5" />
                     <span>Profile</span>
                   </Link>

@@ -48,10 +48,16 @@ export default function DashboardLayout({
     }
   }, [account, error, setUser, router]);
 
+  const fraudAlerts = useQuery({
+    queryKey: ['fraud-alerts', id],
+    queryFn: () => axios.get(`/api/accounts/fraud-alert/unapproved?accountId=${id}`).then(res => res.data),
+    enabled: !!id,
+  });
+
   return (
     <SidebarProvider>
       <div className="grid min-h-screen w-full overflow-hidden lg:grid-cols-[280px_1fr]">
-        <DashboardSidebar />
+        <DashboardSidebar pendingAlerts={fraudAlerts.data?.pendingAlerts} />
         <main className="flex flex-col">{children}</main>
       </div>
     </SidebarProvider>

@@ -72,6 +72,7 @@ export async function POST(
         const rejectedBy = [...transaction.rejectedBy, userData.id]
 
         const isRejectedByAll = rejectedBy.every(user => transaction.bankAccount.account.approvers.some(approver => approver.id === user))
+        const approvedBy = transaction.approvedBy.filter(user => user !== userData.id)
 
         // Update the transaction to mark it as approved
         await prisma.alertTransactions.update({
@@ -80,7 +81,9 @@ export async function POST(
                 isRejected: isRejectedByAll,
                 rejectedBy: {
                     push: userData.id
-                }
+                },
+                approvedBy: approvedBy,
+                isApproved: false
             }
         })
 

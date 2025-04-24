@@ -80,7 +80,7 @@ export async function POST(request: NextRequest) {
           return NextResponse.json({ error: `Approver email ${email} is not valid` }, { status: 400 });
         }
 
-        if (user.email === email) {
+        if (user.email?.toLowerCase() === email.toLowerCase()) {
           return NextResponse.json({ error: "Approver email cannot be the same as the user email" }, { status: 400 });
         }
       }
@@ -117,5 +117,62 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error(error);
     return NextResponse.json({ error: "Failed to create account" }, { status: 500 });
+  }
+}
+
+export async function DELETE(request: NextRequest) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const accountId = searchParams.get("accountId");
+    const user = await verifyUser();
+
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    if (!accountId) {
+      return NextResponse.json({ error: "Account ID is required" }, { status: 400 });
+    }
+
+    // First, get the account to verify ownership
+    const account = await prisma.account.findFirst({
+      where: {
+        id: accountId,
+        user: {
+          email: {
+            equals: user.email,
+            mode: "insensitive",
+          },
+        },
+      },
+      include: {
+        bankAccount: true,
+      },
+    });
+
+    if (!account) {
+      return NextResponse.json({ error: "Account not found" }, { status: 404 });
+    }
+
+    // Delete bank accounts first
+    if (account.bankAccount) {
+      await prisma.bankAccount.delete({
+        where: {
+          id: account.bankAccount.id,
+        },
+      });
+    }
+
+    // Then delete the main account
+    await prisma.account.delete({
+      where: {
+        id: accountId,
+      },
+    });
+
+    return NextResponse.json({ message: "Account deleted successfully" }, { status: 200 });
+  } catch (error) {
+    console.error("Delete account error:", error);
+    return NextResponse.json({ error: "Failed to delete account" }, { status: 500 });
   }
 }

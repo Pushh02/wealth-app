@@ -258,7 +258,26 @@ export default function DualAuthPage() {
   }
 
   if (rules.isLoading) {
-    return <div>Loading...</div>
+    return (
+      <div className="flex flex-col">
+        <header className="flex h-16 items-center gap-4 border-b bg-background/95 backdrop-blur-sm px-6 sticky top-0 z-10">
+          <div className="flex-1">
+            <div className="h-6 w-48 bg-gray-200 rounded animate-pulse" />
+          </div>
+        </header>
+        <div className="flex-1 space-y-6 p-6">
+          <div className="space-y-4">
+            <div className="h-8 w-64 bg-gray-200 rounded animate-pulse" />
+            <div className="h-4 w-96 bg-gray-100 rounded animate-pulse" />
+          </div>
+          <div className="grid gap-4">
+            {[1,2,3].map((i) => (
+              <div key={i} className="h-24 bg-gray-100 rounded-lg animate-pulse" />
+            ))}
+          </div>
+        </div>
+      </div>
+    )
   }
 
   return (

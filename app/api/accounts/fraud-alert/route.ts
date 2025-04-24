@@ -31,42 +31,44 @@ export async function GET(request: NextRequest) {
                     mode: "insensitive",
                 },
             },
-            include: {
-                accounts: {
-                    where: {
-                        id: accountId,
+        });
+        if (!userData) {
+            return NextResponse.json({ error: "User/Account/Alert Transactions not found" }, { status: 404 });
+        }
+
+        const account = await prisma.account.findFirst({
+            where: {
+                id: accountId,
+                OR: [
+                    {
+                        userId: userData.id,
                     },
+                    {
+                        approvers: { some: { id: userData.id } },
+                    },
+                ],
+            },
+            include: {
+                bankAccount: {
                     include: {
-                        bankAccount: {
+                        alertTransactions: {
                             include: {
-                                alertTransactions: {
-                                    where: {
-                                        createdAt: {
-                                            gte: startDate ? new Date(startDate) : new Date(Date.now() - 1000 * 60 * 60 * 24 * 7),
-                                            lte: endDate ? new Date(endDate) : new Date(Date.now()),
-                                        },
-                                    },
-                                    include: {
-                                        violatedRule: true,
-                                        bankAccount: true,
-                                    },
-                                },
+                                violatedRule: true,
+                                bankAccount: true,
                             },
                         },
                     },
                 },
             },
         });
+        
+        
 
-        if (!userData || !userData.accounts[0].bankAccount || !userData.accounts[0].bankAccount.alertTransactions) {
-            return NextResponse.json({ error: "User/Account/Alert Transactions not found" }, { status: 404 });
-        }
-
-        let transactions = userData.accounts[0].bankAccount.alertTransactions;
+        let transactions = account?.bankAccount?.alertTransactions;
 
         // Apply search filter
         if (searchQuery) {
-            transactions = transactions.filter(transaction => 
+            transactions = transactions?.filter(transaction => 
                 transaction.transactionType?.toLowerCase().includes(searchQuery) ||
                 transaction.bankAccount.name?.toLowerCase().includes(searchQuery) ||
                 transaction.amount.toString().includes(searchQuery)
@@ -75,7 +77,7 @@ export async function GET(request: NextRequest) {
 
         // Apply severity filter
         if (severity !== "all") {
-            transactions = transactions.filter(transaction => {
+            transactions = transactions?.filter(transaction => {
                 const amount = Math.abs(transaction.amount);
                 const threshold = transaction.violatedRule?.threshold || 0;
                 
@@ -91,8 +93,8 @@ export async function GET(request: NextRequest) {
         }
 
         // Apply pagination
-        const total = transactions.length;
-        const paginatedTransactions = transactions.slice(skip, skip + limit);
+        const total = transactions?.length || 0;
+        const paginatedTransactions = transactions?.slice(skip, skip + limit);
 
         return NextResponse.json({ 
             transactions: paginatedTransactions,

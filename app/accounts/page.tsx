@@ -18,6 +18,7 @@ interface Account {
   balance: number
   lastFour: string
   institution: string
+  userRole: string
   email: string
   role: string
 }
@@ -41,10 +42,26 @@ export default function AccountsPage() {
   });
   
   if (isLoading) {
-    return <div>Loading...</div>;
+    return (
+      <div className="flex min-h-screen flex-col items-center justify-center bg-muted/30 p-4">
+        <div className="w-full max-w-7xl">
+          <div className="flex items-center justify-between mb-8">
+            <div className="flex flex-col items-start">
+              <div className="h-8 w-64 bg-gray-200 rounded animate-pulse" />
+              <div className="h-4 w-96 bg-gray-200 rounded animate-pulse mt-2" />
+            </div>
+            <div className="h-10 w-24 bg-gray-200 rounded animate-pulse" />
+          </div>
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="h-48 bg-gray-200 rounded animate-pulse" />
+            ))}
+          </div>
+        </div>
+      </div>
+    );
   }
 
-  console.log(accounts);
 
   const handleViewDetails = (account: any) => {
     setUser({
@@ -80,7 +97,7 @@ export default function AccountsPage() {
           </div>
         ) : (
           <>
-            <div className="flex justify-center mb-8">
+            <div className="mb-8">
               <LinkAccountDialog />
             </div>
 
@@ -92,6 +109,11 @@ export default function AccountsPage() {
                       <div>
                         <CardTitle className="text-lg">{account.name}</CardTitle>
                         <CardDescription>{account.institution}</CardDescription>
+                        <div className="mt-1">
+                          <span className="text-xs font-medium px-2 py-1 rounded-full bg-primary/10 text-primary capitalize">
+                            {account.userRole}
+                          </span>
+                        </div>
                       </div>
                       <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
                         <CreditCard className="h-5 w-5 text-primary" />

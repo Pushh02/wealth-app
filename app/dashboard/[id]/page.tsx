@@ -10,6 +10,9 @@ import {
   Search,
   ArrowUpRight,
   TestTube,
+  ChevronDown,
+  LogOut,
+  User,
 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
@@ -24,23 +27,64 @@ import { useUser } from "@/context/user-context"
 import PlaidConnect from "@/components/ui/Plaid/PlaidConnect"
 import { useQuery } from "@tanstack/react-query"
 import axios from "axios"
+import { useRouter } from "next/navigation"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { toast } from "sonner"
 
 export default function DashboardPage() {
-  const { user } = useUser()
+  const { user, setUser } = useUser()
+  const router = useRouter()
   const isApprover = user?.role === "approver"
 
-  const { data: accountDetails, isLoading: accountDetailsLoading } = useQuery({
+  const { data: accountDetails, isLoading: accountDetailsLoading, isError: accountDetailsError } = useQuery({
     queryKey: ["accountDetails", user?.accountId],
     queryFn: () =>
       axios.get(`/api/accounts/details?accountId=${user?.accountId}`)
         .then((res) => res.data),
-    enabled: !!user?.accountId
+    enabled: !!user?.accountId,
+    retry: false,
   })
+
+  const { data: userAccounts } = useQuery({
+    queryKey: ["userAccounts"],
+    queryFn: () =>
+      axios.get("/api/accounts")
+        .then((res) => res.data),
+  })
+
+  const handleAccountSwitch = (account: any) => {
+    if (user) {
+      setUser({
+        ...user,
+        accountId: account.id,
+        role: account.userRole,
+      })
+      router.push(`/dashboard/${account.id}`)
+    }
+  }
+
+  const handleLogout = () => {
+    axios.post("/api/auth/logout")
+      .then(() => {
+        setUser(null)
+        router.push("/login")
+      })
+      .catch((err) => {
+        console.error(err)
+        toast.error("Failed to logout")
+      })
+  }
 
   const totalBalance = accountDetails?.balance.reduce((acc: number, curr: { balance: number }) => acc + curr.balance, 0)
   const bankAccounts = {
     length: accountDetails?.accounts.length,
-    // map the accounts to an object and if the new sub-type arrives, add it to the object and if the subtype already exists increment the count
     accounts: accountDetails?.accounts.reduce((acc: Record<string, number>, account: any) => {
       const accountType = account.subtype
       if (acc[accountType]) {
@@ -56,40 +100,120 @@ export default function DashboardPage() {
     return <div>Loading...</div>
   }
 
+  if (accountDetailsError) {
+    return (
+      <div className="flex flex-col">
+        <header className="flex h-14 lg:h-[60px] items-center gap-4 border-b bg-background px-6">
+          <SidebarTrigger />
+          <div className="flex-1">
+            <h1 className="font-semibold text-lg">Dashboard</h1>
+          </div>
+          <div className="flex items-center gap-4">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" className="flex items-center gap-2">
+                  <span className="font-medium">
+                    {userAccounts?.accounts?.find((account: any) => account.id === user?.accountId)?.name || "Select Account"}
+                  </span>
+                  <ChevronDown className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-[200px]">
+                <DropdownMenuLabel>Switch Account</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                {userAccounts?.accounts?.map((account: any) => (
+                  <DropdownMenuItem
+                    key={account.id}
+                    onClick={() => handleAccountSwitch(account)}
+                    className="flex items-center justify-between"
+                  >
+                    <span>{account.name}</span>
+                    {account.id === user?.accountId && (
+                      <span className="text-xs text-muted-foreground">Current</span>
+                    )}
+                  </DropdownMenuItem>
+                ))}
+                <DropdownMenuSeparator />
+                <DropdownMenuItem className="flex items-center justify-between">
+                <p className="flex items-center gap-2" onClick={() => router.push("/accounts")}>
+                  <User className="h-5 w-5" /> Manage Accounts
+                </p>
+              </DropdownMenuItem>
+                <DropdownMenuItem className="flex items-center justify-between">
+                  <p className="flex items-center gap-2" onClick={handleLogout}>
+                    <LogOut className="h-5 w-5" /> Logout
+                  </p>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+        </header>
+        <div className="flex-1 flex items-center justify-center h-full mt-24">
+          <div className="text-center space-y-6">
+            <div className="h-24 w-24 rounded-full bg-primary/10 flex items-center justify-center mx-auto">
+              <CreditCard className="h-12 w-12 text-primary" />
+            </div>
+            <div className="space-y-2">
+              <h3 className="text-2xl font-semibold tracking-tight">No Bank Account Connected</h3>
+              <p className="text-muted-foreground max-w-md">
+                Connect your bank account to start monitoring transactions and managing your finances.
+              </p>
+            </div>
+            <PlaidConnect accountId={user.accountId} />
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="flex flex-col">
-      <header className="flex h-16 items-center gap-4 border-b bg-background/95 backdrop-blur-sm px-6 sticky top-0 z-10">
-        <SidebarTrigger className="text-muted-foreground hover:text-foreground" />
+      <header className="flex h-14 lg:h-[60px] items-center gap-4 border-b bg-background px-6">
+        <SidebarTrigger />
         <div className="flex-1">
           <h1 className="font-semibold text-lg">Dashboard</h1>
         </div>
         <div className="flex items-center gap-4">
-          <Button variant="ghost" size="icon" className="rounded-full relative">
-            <Bell className="h-5 w-5" />
-            <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[10px] text-primary-foreground">
-              3
-            </span>
-          </Button>
-          <Button variant="ghost" size="icon" className="rounded-full">
-            <Search className="h-5 w-5" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="rounded-full"
-            onClick={() => {
-              axios.get("/api/test").then((res) => {
-                console.log("Test response:", res.data);
-              }).catch((error) => {
-                console.error("Test error:", error);
-              });
-            }}
-          >
-            <TestTube className="h-5 w-5" />
-          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" className="flex items-center gap-2">
+                <span className="font-medium">
+                  {userAccounts?.accounts?.find((account: any) => account.id === user?.accountId)?.name || "Select Account"}
+                </span>
+                <ChevronDown className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-[200px]">
+              <DropdownMenuLabel>Switch Account</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              {userAccounts?.accounts?.map((account: any) => (
+                <DropdownMenuItem
+                  key={account.id}
+                  onClick={() => handleAccountSwitch(account)}
+                  className="flex items-center justify-between"
+                >
+                  <span>{account.name}</span>
+                  {account.id === user?.accountId && (
+                    <span className="text-xs text-muted-foreground">Current</span>
+                  )}
+                </DropdownMenuItem>
+              ))}
+              <DropdownMenuSeparator />
+              <DropdownMenuItem className="flex items-center justify-between">
+                <p className="flex items-center gap-2" onClick={() => router.push("/accounts")}>
+                  <User className="h-5 w-5" /> Manage Accounts
+                </p>
+              </DropdownMenuItem>
+              <DropdownMenuItem className="flex items-center justify-between">
+                <p className="flex items-center gap-2" onClick={handleLogout}>
+                  <LogOut className="h-5 w-5" /> Logout
+                </p>
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </header>
-      <div className="flex-1 space-y-4 p-6">
+      <div className="flex-1 space-y-6 p-6">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
           <div>
             <h2 className="text-3xl font-bold tracking-tight gradient-text">Welcome back, {user.name ? user.name.charAt(0).toUpperCase() + user.name.slice(1) : "User"}</h2>
@@ -139,23 +263,20 @@ export default function DashboardPage() {
                 <div className="flex justify-between">
                   <div>
                     <p className="text-sm font-medium text-muted-foreground mb-1">Total Balance</p>
-                    <h3 className="text-2xl font-bold">${totalBalance}</h3>
-                    <div className="flex items-center mt-1 text-green-600 text-xs font-medium">
-                      <ArrowUpRight className="h-3 w-3 mr-1" />
-                      +20.1% from last month
-                    </div>
+                    <h3 className="text-2xl font-bold">${totalBalance?.toFixed(2) || "0.00"}</h3>
+                    <p className="text-xs text-muted-foreground mt-1">Across all accounts</p>
                   </div>
-                  <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
-                    <DollarSign className="h-6 w-6 text-primary" />
+                  <div className="h-12 w-12 rounded-full bg-blue-50 flex items-center justify-center">
+                    <DollarSign className="h-6 w-6 text-blue-600" />
                   </div>
                 </div>
               </div>
-              <div className="stat-card success">
+              <div className="stat-card">
                 <div className="flex justify-between">
                   <div>
                     <p className="text-sm font-medium text-muted-foreground mb-1">Linked Accounts</p>
                     <h3 className="text-2xl font-bold">{bankAccounts.length || 0}</h3>
-                    <p className="text-xs text-muted-foreground mt-1">{bankAccounts.accounts ? Object.entries(bankAccounts.accounts).map(([key, value]) => `${value} ${key}`).join(", ") : ""}</p>
+                    <p className="text-xs text-muted-foreground mt-1">Active bank accounts</p>
                   </div>
                   <div className="h-12 w-12 rounded-full bg-green-50 flex items-center justify-center">
                     <CreditCard className="h-6 w-6 text-green-600" />

@@ -33,6 +33,8 @@ interface AlertTransaction {
   transactionType: string
   createdAt: string
   amount: number
+  isApproved: boolean
+  isRejected: boolean
   bankAccount: {
     name: string
   }
@@ -217,14 +219,7 @@ export function FraudAlerts({ accountId, extended = false, searchQuery = "", sev
                 </TableCell>
                 <TableCell className="text-right">
                   <div className="flex items-center justify-end gap-2">
-                    <Button variant="outline" size="sm" className="h-8 rounded-full">
-                      <Eye className="mr-1 h-3 w-3" />
-                      Details
-                    </Button>
-                    <Button size="sm" className="h-8 rounded-full bg-red-600 hover:bg-red-700">
-                      <ShieldAlert className="mr-1 h-3 w-3" />
-                      Report
-                    </Button>
+                    <p className={`text-sm px-2 rounded-full ${alert.isApproved ? "bg-green-200 text-green-700" : alert.isRejected ? "bg-red-200 text-red-700" : "bg-yellow-200 text-yellow-700"}`}>{alert.isApproved ? "Approved" : alert.isRejected ? "Rejected" : "Pending"}</p>
                   </div>
                 </TableCell>
               </TableRow>
