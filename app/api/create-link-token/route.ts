@@ -47,7 +47,7 @@ export async function GET() {
       products: [Products.Auth, Products.Transactions],
       country_codes: [CountryCode.Us],
       language: "en",
-      webhook: "https://webhook.site/4a26e18a-8ecc-43bd-bed0-2edf5838e98a",
+      webhook: "https://wealth-app-pink.vercel.app/api/plaid/webhook",
     });    
 
     return NextResponse.json({ link_token: response.data.link_token });
