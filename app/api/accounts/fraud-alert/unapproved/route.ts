@@ -19,6 +19,7 @@ export async function GET(request: NextRequest) {
         isRejected: false,
       },
     });
+    console.log("fraudAlerts", fraudAlerts)
 
     return NextResponse.json({ pendingAlerts: fraudAlerts.length }, { status: 200 });
   } catch (error) {

@@ -12,14 +12,12 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Checkbox } from "@/components/ui/checkbox"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { useToast } from "@/hooks/use-toast"
 
+import { toast } from "sonner"
 import { login } from "@/app/login/action";
 
 
 export default function LoginPage() {
-  const router = useRouter()
-  const { toast } = useToast()
   const [isLoading, setIsLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
 
@@ -76,19 +74,22 @@ export default function LoginPage() {
 
     setIsLoading(true)
 
-    // Simulate API call
     try {
       const parsedFormData = {
         email: formData.email,
         password: formData.password,
       }
       const response = await login(parsedFormData)
-      console.log(response)
+      // If we get here, it means there was an error (since successful login redirects)
+      if (response?.error) {
+        toast.error(response.error)
+      }
     } catch (error) {
-      toast({
-        title: "Login failed",
+      if (error instanceof Error && error.message.includes('NEXT_REDIRECT')) {
+        return
+      }
+      toast.error("Login failed", {
         description: "There was a problem logging in. Please try again.",
-        variant: "destructive",
       })
     } finally {
       setIsLoading(false)
@@ -184,7 +185,7 @@ export default function LoginPage() {
         </Card>
 
         <div className="mt-4 text-center text-xs text-muted-foreground">
-          <p>Demo credentials: demo@example.com / password123</p>
+          <p>Demo credentials: pushkarkamble24@gmail.com / 12345678</p>
         </div>
       </div>
     </div>

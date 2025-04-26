@@ -72,7 +72,7 @@ export default function AccountsPage() {
   }
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-muted/30 p-4">
+    <div className="flex min-h-screen flex-col items-center justify-center bg-muted/30 p-4 sm:mt-0 mt-10">
       <div className="w-full max-w-7xl">
         <div className="flex items-center justify-between mb-8">
           <div className="flex flex-col items-start">

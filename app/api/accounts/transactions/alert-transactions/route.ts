@@ -40,8 +40,14 @@ export async function GET(request: NextRequest) {
             })
         ]);
 
+        const sortedAlertTransactions = alertTransactions.sort((a, b) => {
+            if (!a.isApproved && !a.isRejected && (b.isApproved || b.isRejected)) return -1;
+            if (!b.isApproved && !b.isRejected && (a.isApproved || a.isRejected)) return 1;
+            return 0;
+        });
+
         return NextResponse.json({ 
-            alertTransactions,
+            alertTransactions: sortedAlertTransactions,
             pagination: {
                 total,
                 page,
