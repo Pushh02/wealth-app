@@ -35,7 +35,7 @@ const HeroSection = () => {
           </div>
         </div>
         
-        <div className="relative max-w-5xl mx-auto animate-scale-in w-[50%]" style={{ animationDelay: '0.6s' }}>
+        <div className="relative max-w-5xl mx-auto animate-scale-in w-[50%] hidden md:block" style={{ animationDelay: '0.6s' }}>
           <div className="relative bg-gradient-to-b from-primary/20 to-primary/0 rounded-2xl p-1">
             <div className="absolute inset-0 rounded-2xl backdrop-blur-sm bg-background/30 shadow-lg" />
             <img 

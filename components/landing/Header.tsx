@@ -31,7 +31,7 @@ const Header = () => {
       <div className="container flex items-center justify-between">
         <div className="flex items-center gap-2">
           <div className="h-8 w-8 rounded-full bg-gradient-to-br from-blue-600 to-indigo-600"></div>
-          <span className="font-bold text-xl">SmartWealth</span>
+          <span className="font-bold text-xl">WealthGuard</span>
         </div>
         
         <div className="hidden md:flex items-center gap-6">

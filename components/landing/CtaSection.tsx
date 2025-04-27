@@ -18,7 +18,7 @@ const CtaSection = () => {
             Start Protecting Your Financial Future Today
           </h2>
           <p className="text-lg mb-8 text-white/80">
-            Join thousands of users who trust SmartWealth to monitor their finances and protect their wealth.
+            Join thousands of users who trust WealthGuard to monitor their finances and protect their wealth.
           </p>
           
           <div className="flex flex-col sm:flex-row justify-center gap-4">

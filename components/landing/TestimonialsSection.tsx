@@ -25,7 +25,7 @@ const testimonials = [
     avatar: "EW"
   },
   {
-    quote: "Bank-level security was our top priority when choosing a monitoring solution. SmartWealth delivers this alongside an incredibly intuitive interface.",
+    quote: "Bank-level security was our top priority when choosing a monitoring solution. WealthGuard delivers this alongside an incredibly intuitive interface.",
     name: "David Rodriguez",
     role: "Security Director",
     avatar: "DR"

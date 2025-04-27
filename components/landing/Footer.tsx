@@ -9,7 +9,7 @@ const Footer = () => {
           <div>
             <div className="flex items-center gap-2 mb-4">
               <div className="h-8 w-8 rounded-full bg-gradient-to-br from-blue-600 to-indigo-600"></div>
-              <span className="font-bold text-xl">SmartWealth</span>
+              <span className="font-bold text-xl">WealthGuard</span>
             </div>
             <p className="text-muted-foreground mb-4">
               Intelligent financial monitoring for modern wealth management.
@@ -37,41 +37,11 @@ const Footer = () => {
               </a>
             </div>
           </div>
-          
-          <div>
-            <h3 className="font-medium mb-4">Product</h3>
-            <ul className="space-y-2">
-              <li><a href="#" className="text-muted-foreground hover:text-foreground transition-colors">Features</a></li>
-              <li><a href="#" className="text-muted-foreground hover:text-foreground transition-colors">Security</a></li>
-              <li><a href="#" className="text-muted-foreground hover:text-foreground transition-colors">Pricing</a></li>
-              <li><a href="#" className="text-muted-foreground hover:text-foreground transition-colors">API</a></li>
-            </ul>
-          </div>
-          
-          <div>
-            <h3 className="font-medium mb-4">Resources</h3>
-            <ul className="space-y-2">
-              <li><a href="#" className="text-muted-foreground hover:text-foreground transition-colors">Documentation</a></li>
-              <li><a href="#" className="text-muted-foreground hover:text-foreground transition-colors">Guides</a></li>
-              <li><a href="#" className="text-muted-foreground hover:text-foreground transition-colors">Support</a></li>
-              <li><a href="#" className="text-muted-foreground hover:text-foreground transition-colors">API Status</a></li>
-            </ul>
-          </div>
-          
-          <div>
-            <h3 className="font-medium mb-4">Company</h3>
-            <ul className="space-y-2">
-              <li><a href="#" className="text-muted-foreground hover:text-foreground transition-colors">About</a></li>
-              <li><a href="#" className="text-muted-foreground hover:text-foreground transition-colors">Blog</a></li>
-              <li><a href="#" className="text-muted-foreground hover:text-foreground transition-colors">Careers</a></li>
-              <li><a href="#" className="text-muted-foreground hover:text-foreground transition-colors">Contact</a></li>
-            </ul>
-          </div>
         </div>
         
         <div className="border-t mt-12 pt-8 flex flex-col md:flex-row justify-between items-center">
           <p className="text-muted-foreground text-sm order-2 md:order-1">
-            &copy; 2025 SmartWealth. All rights reserved.
+            &copy; 2025 WealthGuard. All rights reserved.
           </p>
           <div className="flex gap-6 mb-4 md:mb-0 order-1 md:order-2">
             <a href="#" className="text-sm text-muted-foreground hover:text-foreground transition-colors">Privacy Policy</a>
