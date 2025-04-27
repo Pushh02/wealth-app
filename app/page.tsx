@@ -1,10 +1,25 @@
-import PlaidConnect from "@/components/ui/Plaid/PlaidConnect";
-import Image from "next/image";
+import React from 'react';
+import Header from '@/components/landing/Header';
+import HeroSection from '@/components/landing/HeroSection';
+import FeaturesSection from '@/components/landing/FeaturesSection';
+import BenefitsSection from '@/components/landing/BenefitsSection';
+import TestimonialsSection from '@/components/landing/TestimonialsSection';
+import CtaSection from '@/components/landing/CtaSection';
+import Footer from '@/components/landing/Footer';
 
-export default function Home() {
+const Page = () => {
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <h1 className="text-4xl font-bold">A very cool landing page, I guess</h1>
+    <div className="min-h-screen flex flex-col">
+      <Header />
+      <main>
+        <HeroSection />
+        <FeaturesSection />
+        <BenefitsSection />
+        <TestimonialsSection />
+      </main>
+      <Footer />
     </div>
   );
-}
+};
+
+export default Page;
