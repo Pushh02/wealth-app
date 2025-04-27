@@ -47,7 +47,10 @@ export function PendingApprovals({ extended = false, transactions, pagination, o
       return response.data
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["accountDetails", "transactions"] })
+      queryClient.invalidateQueries({ queryKey: ["accountDetails"] })
+      queryClient.invalidateQueries({ queryKey: ["transactions"] })
+      queryClient.invalidateQueries({ queryKey: ["fraud-alerts"] })
+      queryClient.invalidateQueries({ queryKey: ["alert-transactions"] })
       toast({
         title: "Transaction approved",
         description: "The transaction has been approved successfully.",
@@ -71,7 +74,10 @@ export function PendingApprovals({ extended = false, transactions, pagination, o
       return response.data
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["accountDetails", "transactions"] })
+      queryClient.invalidateQueries({ queryKey: ["accountDetails"] })
+      queryClient.invalidateQueries({ queryKey: ["transactions"] })
+      queryClient.invalidateQueries({ queryKey: ["fraud-alerts"] })
+      queryClient.invalidateQueries({ queryKey: ["alert-transactions"] })
       toast({
         title: "Transaction rejected",
         description: "The transaction has been rejected successfully.",
@@ -287,8 +293,7 @@ export function PendingApprovals({ extended = false, transactions, pagination, o
                       <DollarSign className="h-4 w-4" />
                     </div>
                     <div>
-                      <h4 className="font-medium">{transaction.name}</h4>
-                      <span className="status-badge pending">Pending</span>
+                      <h4 className="font-medium w-[100%] whitespace-nowrap truncate" title={transaction.name}>{transaction.name}</h4>
                     </div>
                   </div>
                   <p className="text-sm text-muted-foreground">
@@ -302,12 +307,15 @@ export function PendingApprovals({ extended = false, transactions, pagination, o
                     <span className="font-medium">Reason:</span> {transaction.violatedRule?.description}
                   </div>
                 </div>
-                <div className="flex gap-2">
+                {(!transaction.isApproved && !transaction.isRejected && !transaction.approvedBy?.some(u => u === user?.id) && !transaction.rejectedBy?.some(u => u === user?.id)) && (<div className="gap-2 flex flex-col md:flex-row">
                   <Button
                     variant="outline"
                     size="sm"
-                    className="h-8 rounded-full"
-                    onClick={() => handleApprove(transaction.id)}
+                    className="h-8 rounded-full hover:bg-green-100"
+                    onClick={(e) => {
+                      console.log("approving", transaction.id)
+                      handleApprove(transaction.id)
+                    }}
                     disabled={approveTransactionMutation.isPending}
                   >
                     <Check className="mr-1 h-3 w-3" />
@@ -316,13 +324,23 @@ export function PendingApprovals({ extended = false, transactions, pagination, o
                   <Button
                     size="sm"
                     className="h-8 rounded-full bg-red-600 hover:bg-red-700"
-                    onClick={() => handleReject(transaction.id)}
+                    onClick={(e) => {
+                      e.preventDefault()
+                      e.stopPropagation()
+                      console.log("rejecting", transaction.id)
+                      handleReject(transaction.id)
+                    }}
                     disabled={rejectTransactionMutation.isPending}
                   >
                     <X className="mr-1 h-3 w-3" />
                     {rejectTransactionMutation.isPending ? "Rejecting..." : "Reject"}
                   </Button>
-                </div>
+                </div>)}
+                {(transaction.isApproved || transaction.approvedBy.some(u => u === user?.id)) ? (<div className="flex items-center justify-center gap-2 bg-green-100 p-2 rounded-md text-sm text-green-600">
+                  <span className="text-green-600">Approved</span>
+                </div>) : (transaction.isRejected || transaction.rejectedBy.some(u => u === user?.id)) && (<div className="flex items-center justify-center gap-2 bg-red-100 p-2 rounded-md text-sm text-red-600">
+                  <span className="text-red-600">Rejected</span>
+                </div>)}
               </div>
             </CardContent>
           </Card>

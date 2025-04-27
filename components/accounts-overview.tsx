@@ -77,12 +77,12 @@ export function AccountsOverview({ accounts }: { accounts: Account[] }) {
   // Update the AccountsOverview component with a more modern design
   return (
     <Card className="overflow-hidden border-0 shadow-lg">
-      <CardHeader className="border-b bg-muted/30 px-6 flex flex-row items-center justify-between">
+      <CardHeader className="border-b bg-muted/30 px-6 flex flex-col md:flex-row items-center justify-between">
         <div>
           <CardTitle>Linked Accounts</CardTitle>
           <CardDescription>Manage your connected financial accounts</CardDescription>
         </div>
-        <Button className="gradient-bg text-white shadow-sm">
+        <Button className="gradient-bg text-white shadow-sm md:w-auto w-full">
           <DollarSign className="mr-2 h-4 w-4" />
           Link New Account
         </Button>
@@ -104,7 +104,7 @@ export function AccountsOverview({ accounts }: { accounts: Account[] }) {
                       <span className="text-xs text-muted-foreground">
                         {account.officialName} • Updated {new Date().toLocaleDateString()}
                       </span>
-                      <span className="ml-2 rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
+                      <span className="ml-2 rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary md:block hidden">
                         {account.type}
                       </span>
                     </div>

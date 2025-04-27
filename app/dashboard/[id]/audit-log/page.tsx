@@ -20,6 +20,54 @@ import { DateRange } from "react-day-picker"
 import { addDays } from "date-fns"
 import { useDebounce } from "@/hooks/use-debounce"
 
+const convertToCSV = (transactions: any[]) => {
+  const headers = [
+    "Transaction ID",
+    "Type",
+    "Name",
+    "Amount",
+    "Date",
+    "Category",
+    "Account",
+    "Status",
+    "Created At",
+    "Violated Rule"
+  ]
+
+  const rows = transactions.map(txn => [
+    txn.id,
+    txn.type,
+    txn.name,
+    txn.amount,
+    txn.date,
+    Array.isArray(txn.category) ? txn.category.join(" > ") : txn.category,
+    txn.account,
+    txn.status,
+    new Date(txn.createdAt).toLocaleString(),
+    txn.violatedRule?.description || ""
+  ])
+
+  const csvContent = [
+    headers.join(","),
+    ...rows.map(row => row.map(cell => `"${cell}"`).join(","))
+  ].join("\n")
+
+  return csvContent
+}
+
+const downloadCSV = (transactions: any[]) => {
+  const csvContent = convertToCSV(transactions)
+  const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" })
+  const link = document.createElement("a")
+  const url = URL.createObjectURL(blob)
+  link.setAttribute("href", url)
+  link.setAttribute("download", `audit-transactions-${new Date().toISOString().split("T")[0]}.csv`)
+  link.style.visibility = "hidden"
+  document.body.appendChild(link)
+  link.click()
+  document.body.removeChild(link)
+}
+
 export default function AuditLogPage() {
   const { user } = useUser()
   const [searchTerm, setSearchTerm] = useState("")
@@ -182,12 +230,12 @@ export default function AuditLogPage() {
         </Card>
 
         <Card className="overflow-hidden border-0 shadow-lg">
-          <CardHeader className="border-b bg-muted/30 px-6 flex flex-row items-center justify-between">
+          <CardHeader className="border-b bg-muted/30 px-6 flex flex-col md:flex-row items-start md:items-center justify-between">
             <div>
               <CardTitle>Audit Log Entries</CardTitle>
               <CardDescription>{auditLogs?.pagination?.total || 0} entries found</CardDescription>
             </div>
-            <Button variant="outline" size="sm" className="h-9 rounded-full">
+            <Button variant="outline" size="sm" className="h-9 rounded-full md:w-auto w-full mt-4 md:mt-0" onClick={() => downloadCSV(auditLogs?.transactions || [])} disabled={!auditLogs?.transactions?.length}>
               <Download className="mr-2 h-4 w-4" /> Export
             </Button>
           </CardHeader>

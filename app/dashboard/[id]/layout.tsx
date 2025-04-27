@@ -56,9 +56,9 @@ export default function DashboardLayout({
 
   return (
     <SidebarProvider>
-      <div className="grid min-h-screen w-full overflow-hidden lg:grid-cols-[280px_1fr]">
+      <div className="grid min-h-screen w-full md:grid-cols-[280px_1fr]">
         <DashboardSidebar pendingAlerts={fraudAlerts.data?.pendingAlerts} />
-        <main className="flex flex-col">{children}</main>
+        <main className="flex flex-col overflow-auto">{children}</main>
       </div>
     </SidebarProvider>
   )

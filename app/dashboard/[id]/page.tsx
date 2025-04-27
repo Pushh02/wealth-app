@@ -6,10 +6,6 @@ import {
   CreditCard,
   DollarSign,
   Shield,
-  Bell,
-  Search,
-  ArrowUpRight,
-  TestTube,
   ChevronDown,
   LogOut,
   User,
@@ -27,7 +23,7 @@ import { useUser } from "@/context/user-context"
 import PlaidConnect from "@/components/ui/Plaid/PlaidConnect"
 import { useQuery } from "@tanstack/react-query"
 import axios from "axios"
-import { useRouter } from "next/navigation"
+import { useRouter, useParams } from "next/navigation"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -42,6 +38,8 @@ export default function DashboardPage() {
   const { user, setUser } = useUser()
   const router = useRouter()
   const isApprover = user?.role === "approver"
+  
+  const { id } = useParams()
 
   const { data: accountDetails, isLoading: accountDetailsLoading, isError: accountDetailsError } = useQuery({
     queryKey: ["accountDetails", user?.accountId],
@@ -323,24 +321,24 @@ export default function DashboardPage() {
                 </CardContent>
                 <CardFooter className="border-t bg-muted/30 px-6 py-4">
                   <Button variant="outline" asChild className="w-full">
-                    <Link href="/dashboard/transactions">
+                    <Link href={`/dashboard/${id}/transactions`}>
                       View All Transactions
                       <ArrowRight className="ml-2 h-4 w-4" />
                     </Link>
                   </Button>
                 </CardFooter>
               </Card>
-              <Card className="col-span-3 overflow-hidden border-0 shadow-lg">
+              <Card className="md:col-span-3 col-span-4 overflow-hidden border-0 shadow-lg">
                 <CardHeader className="border-b bg-muted/30 px-6">
                   <CardTitle>Fraud Alerts</CardTitle>
                   <CardDescription>Recent suspicious activities detected</CardDescription>
                 </CardHeader>
-                <CardContent className="p-0">
+                <CardContent className="p-0 w-full">
                   <FraudAlerts accountId={user.accountId} />
                 </CardContent>
                 <CardFooter className="border-t bg-muted/30 px-6 py-4">
                   <Button variant="outline" asChild className="w-full">
-                    <Link href="/dashboard/fraud-alerts">
+                    <Link href={`/dashboard/${id}/fraud-alerts`}>
                       View All Alerts
                       <ArrowRight className="ml-2 h-4 w-4" />
                     </Link>

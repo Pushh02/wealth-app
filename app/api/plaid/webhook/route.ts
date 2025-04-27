@@ -10,6 +10,7 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
 
     console.log("Received Plaid Webhook:", body);
+    console.log("Webhook Type:", req);
 
     const webhookType = body.webhook_type;
     const itemId = body.item_id;

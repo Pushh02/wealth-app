@@ -15,6 +15,7 @@ import axios from "axios"
 import { DateRangePicker } from "@/components/ui/date-range-picker"
 import { DateRange } from "react-day-picker"
 import { format } from "date-fns"
+import { toast } from 'sonner'
 
 export default function TransactionsPage() {
   const { user } = useUser();
@@ -33,10 +34,10 @@ export default function TransactionsPage() {
     queryKey: ["transactions", user?.accountId, dateRange],
     queryFn: async () => {
       if (!dateRange?.from || !dateRange?.to) return { added: [] }
-      
+
       const startDate = format(dateRange.from, 'yyyy-MM-dd')
       const endDate = format(dateRange.to, 'yyyy-MM-dd')
-      
+
       const response = await axios.get(
         `/api/accounts/transactions/date-search?accountId=${user?.accountId}&startDate=${startDate}&endDate=${endDate}`
       )
@@ -74,9 +75,9 @@ export default function TransactionsPage() {
                 <Label htmlFor="search-transactions">Search</Label>
                 <div className="relative">
                   <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-                  <Input 
-                    id="search-transactions" 
-                    placeholder="Search transactions" 
+                  <Input
+                    id="search-transactions"
+                    placeholder="Search transactions"
                     className="pl-8"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
@@ -124,18 +125,15 @@ export default function TransactionsPage() {
         </Card>
 
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between">
+          <CardHeader className="flex flex-col md:flex-row items-start md:items-center justify-between">
             <div>
               <CardTitle>All Transactions</CardTitle>
               <CardDescription>View and monitor all your transactions</CardDescription>
             </div>
-            <Button variant="outline" size="sm">
-              <Download className="mr-2 h-4 w-4" /> Export
-            </Button>
           </CardHeader>
           <CardContent>
-            <RecentTransactions 
-              extended 
+            <RecentTransactions
+              extended
               accountId={user.accountId}
               searchQuery={searchQuery}
               selectedAccount={selectedAccount}

@@ -69,11 +69,6 @@ export function EditRuleDialog({ rule, open, onOpenChange }: EditRuleDialogProps
 
   return (
     <Dialog open={open ?? isOpen} onOpenChange={onOpenChange ?? setIsOpen}>
-      <DialogTrigger asChild>
-        <Button variant="outline">
-          <AlertTriangle className="mr-2 h-4 w-4" /> Configure Alert Rules
-        </Button>
-      </DialogTrigger>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>Edit Fraud Detection Rule</DialogTitle>

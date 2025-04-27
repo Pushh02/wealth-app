@@ -75,10 +75,10 @@ export function FraudAlerts({ accountId, extended = false, searchQuery = "", sev
 
   if (fraudAlerts.isLoading) {
     return (
-      <div className="space-y-4">
+      <div className="space-y-4 w-full">
         {[1, 2].map((i) => (
-          <div key={i} className="gradient-border">
-            <Card className="border-0 overflow-hidden">
+          <div key={i} className="gradient-border w-full">
+            <Card className="border-0 overflow-hidden w-full">
               <CardContent className="p-4">
                 <div className="flex items-start justify-between">
                   <div className="space-y-2">
@@ -262,8 +262,8 @@ export function FraudAlerts({ accountId, extended = false, searchQuery = "", sev
   return (
     <div className="space-y-4">
       {transactions.slice(0, 2).map((alert: AlertTransaction) => (
-        <div key={alert.id} className="gradient-border">
-          <Card className="border-0 overflow-hidden">
+        <div key={alert.id} className="gradient-border w-full">
+          <Card className="border-0 overflow-hidden w-full">
             <CardContent className="p-4">
               <div className="flex items-start justify-between">
                 <div className="space-y-2">
@@ -287,16 +287,6 @@ export function FraudAlerts({ accountId, extended = false, searchQuery = "", sev
                   <div className="bg-muted/50 p-2 rounded-md text-sm">
                     <span className="font-medium">Reason:</span> {alert.violatedRule?.description}
                   </div>
-                </div>
-                <div className="flex gap-2">
-                  <Button variant="outline" size="sm" className="h-8 rounded-full">
-                    <ThumbsUp className="mr-1 h-3 w-3" />
-                    Legitimate
-                  </Button>
-                  <Button size="sm" className="h-8 rounded-full bg-red-600 hover:bg-red-700">
-                    <ThumbsDown className="mr-1 h-3 w-3" />
-                    Fraudulent
-                  </Button>
                 </div>
               </div>
             </CardContent>
