@@ -223,8 +223,8 @@ export default function ProfilePage() {
                 <Label>Approvers Info</Label>
                 <div className="flex items-center gap-2 text-sm">
                   <Building className="h-4 w-4 text-muted-foreground" />
-                  <span>{profileData?.approvers?.length || 0} Approvers</span>
-                  <ApproversDialog approvers={profileData?.approvers} />
+                  <span>{profileData?.approversInfo?.length || 0} Approvers</span>
+                  <ApproversDialog approvers={profileData?.approversInfo} />
                 </div>
               </div>
               <div className="space-y-2">

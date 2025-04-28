@@ -76,13 +76,6 @@ const BenefitsSection = () => {
                 </div>
               </div>
             </div>
-            
-            <div className="absolute top-1/2 -right-12 transform -translate-y-1/2 bg-card p-4 rounded-lg shadow-lg border glass-card">
-              <div className="flex items-center gap-2">
-                <div className="h-3 w-3 rounded-full bg-green-500"></div>
-                <div className="text-sm font-medium">Alert Settings Updated</div>
-              </div>
-            </div>
           </div>
         </div>
       </div>

@@ -29,9 +29,6 @@ const HeroSection = () => {
             <Button size="lg" className="gap-2 text-base" onClick={() => router.push('/signup')}>
               Get Started <ArrowRight size={16} />
             </Button>
-            <Button size="lg" variant="outline" className="text-base" onClick={() => router.push('/login')}>
-              Watch Demo
-            </Button>
           </div>
         </div>
         

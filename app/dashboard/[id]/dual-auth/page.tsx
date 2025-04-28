@@ -15,7 +15,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import { useParams } from "next/navigation";
 import { Rules } from "@prisma/client"
 import { EditRuleDialog } from "@/components/edit-rule-dialog"
-import { useToast } from "@/hooks/use-toast"
+import { toast } from "sonner"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Badge } from "@/components/ui/badge"
 import {
@@ -79,7 +79,6 @@ export default function DualAuthPage() {
   })
   const params = useParams();
   const accountId = params.id as string;
-  const { toast } = useToast()
   const queryClient = useQueryClient()
   
   const rules = useQuery({
@@ -101,8 +100,7 @@ export default function DualAuthPage() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["rules"] })
-      toast({
-        title: "Rule created",
+      toast.success("Rule created", {
         description: "The dual authorization rule has been created successfully.",
       })
       setShowAddRule(false)
@@ -114,11 +112,7 @@ export default function DualAuthPage() {
       })
     },
     onError: () => {
-      toast({
-        title: "Error",
-        description: "Failed to create the rule. Please try again.",
-        variant: "destructive",
-      })
+      toast.error("Failed to create the rule. Please try again.")
     }
   })
 
@@ -131,11 +125,7 @@ export default function DualAuthPage() {
       queryClient.invalidateQueries({ queryKey: ["rules"] })
     },
     onError: () => {
-      toast({
-        title: "Error",
-        description: "Failed to update the rule. Please try again.",
-        variant: "destructive",
-      })
+      toast.error("Failed to update the rule. Please try again.")
     }
   })
 
@@ -146,18 +136,13 @@ export default function DualAuthPage() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["rules"] })
-      toast({
-        title: "Rule deleted",
+      toast.success("Rule deleted", {
         description: "The dual authorization rule has been deleted successfully.",
       })
       setRuleToDelete(null)
     },
     onError: () => {
-      toast({
-        title: "Error",
-        description: "Failed to delete the rule. Please try again.",
-        variant: "destructive",
-      })
+      toast.error("Failed to delete the rule. Please try again.")
     }
   })
 
@@ -168,8 +153,7 @@ export default function DualAuthPage() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["approvers"] })
-      toast({
-        title: "Approver added",
+      toast.success("Approver added", {
         description: "The approver has been added successfully.",
       })
       setIsAddApproverOpen(false)
@@ -178,12 +162,9 @@ export default function DualAuthPage() {
         email: "",
       })
     },
-    onError: () => {
-      toast({
-        title: "Error",
-        description: "Failed to add the approver. Please try again.",
-        variant: "destructive",
-      })
+    onError: (error: any) => {
+      setIsAddApproverOpen(false)
+      toast.error(error.response.data.error || "Failed to add the approver. Please try again.")
     }
   })
 
@@ -194,17 +175,12 @@ export default function DualAuthPage() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["approvers"] })
-      toast({
-        title: "Approver removed",
+      toast.success("Approver removed", {
         description: "The approver has been removed successfully.",
       })
     },
     onError: () => {
-      toast({
-        title: "Error",
-        description: "Failed to remove the approver. Please try again.",
-        variant: "destructive",
-      })
+      toast.error("Failed to remove the approver. Please try again.")
     }
   })
 

@@ -64,7 +64,7 @@ export async function POST(request: NextRequest) {
             //     },
             // });
             //todo: setup smtp server to send email to approver
-            return NextResponse.json({ error: "Approver not found" }, { status: 404 });
+            return NextResponse.json({ error: "Approver does not have an account" }, { status: 404 });
         }
 
         await prisma.account.update({

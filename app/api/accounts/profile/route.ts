@@ -20,20 +20,29 @@ export async function GET(request: NextRequest) {
                 }
             },
             include: {
-                accounts: {
-                    include: {
-                        bankAccount: true,
-                        approvers: true
-                    }
-                }
+                accounts: true
             }
         })
 
-        if (!userData) {
+        if (!userData || !accountId) {
             return NextResponse.json({ error: "User not found" }, { status: 404 })
         }
 
-        const account = userData.accounts.find(account => account.id === accountId)
+        const account = await prisma.account.findFirst({
+            where: {
+                id: accountId,
+                user: {
+                    email: {
+                        equals: user.email,
+                        mode: "insensitive"
+                    }
+                }
+            },
+            include: {
+                approvers: true
+            }
+        })
+
 
         if (!account) {
             return NextResponse.json({ error: "Account not found" }, { status: 404 })
