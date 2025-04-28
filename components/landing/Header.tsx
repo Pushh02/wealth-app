@@ -23,9 +23,7 @@ const Header = () => {
     <header 
       className={cn(
         "fixed top-0 left-0 right-0 z-50 transition-all duration-200 py-4",
-        isScrolled 
-          ? "bg-white/80 backdrop-blur-lg shadow-sm dark:bg-slate-900/80" 
-          : "bg-transparent"
+        mobileMenuOpen ? "bg-background border-b" : "bg-transparent"
       )}
     >
       <div className="container flex items-center justify-between">
@@ -56,7 +54,7 @@ const Header = () => {
       
       {/* Mobile menu */}
       {mobileMenuOpen && (
-        <div className="fixed inset-0 top-16 bg-white dark:bg-slate-900 z-40 p-4">
+        <div className="fixed inset-0 top-16 bg-background border-t z-40 p-4 backdrop-blur-none">
           <nav className="flex flex-col gap-4">
             <a 
               href="#features" 
@@ -79,9 +77,9 @@ const Header = () => {
             >
               Testimonials
             </a>
-            <div className="flex flex-col gap-2 mt-4">
-              <Button variant="outline" className="w-full" onClick={() => router.push('/login')}>Log In</Button>
-              <Button className="w-full" onClick={() => router.push('/signup')}>Get Started</Button>
+            <div className="flex flex-col gap-2 mt-4 items-center">
+              <Button variant="outline" className="w-full mr-4" onClick={() => router.push('/login')}>Log In</Button>
+              <Button className="w-full mr-4" onClick={() => router.push('/signup')}>Get Started</Button>
             </div>
           </nav>
         </div>

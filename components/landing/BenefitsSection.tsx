@@ -64,12 +64,12 @@ const BenefitsSection = () => {
                 </div>
                 
                 <div className="mt-6 pt-6 border-t">
-                  <div className="flex justify-between items-center">
+                  <div className="flex justify-between items-center gap-x-2">
                     <div>
-                      <div className="text-sm text-muted-foreground">Monthly Spending</div>
+                      <div className="text-sm text-muted-foreground whitespace-nowrap truncate">Monthly Spending</div>
                       <div className="text-2xl font-bold">$2,854.43</div>
                     </div>
-                    <div className="p-2 rounded-full bg-green-500/20 text-green-600 font-medium text-sm">
+                    <div className="p-2 rounded-full bg-green-500/20 text-green-600 font-medium text-sm whitespace-nowrap truncate">
                       -12% from last month
                     </div>
                   </div>
