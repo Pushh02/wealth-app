@@ -9,9 +9,6 @@ export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
 
-    console.log("Received Plaid Webhook:", body);
-    console.log("Webhook Type:", req);
-
     const webhookType = body.webhook_type;
     const itemId = body.item_id;
 
@@ -50,6 +47,9 @@ export async function POST(req: NextRequest) {
         const transactions = await prisma.alertTransactions.findMany({
           where: {
             bankAccountId: bankAccount.id,
+            createdAt: {
+              gte: new Date(Date.now() - 1000 * 60 * 60 * 24 * 90), // 90 days ago
+            },
           },
         });
 

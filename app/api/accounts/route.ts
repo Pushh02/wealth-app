@@ -155,13 +155,28 @@ export async function DELETE(request: NextRequest) {
     }
 
     // Delete bank accounts first
-    if (account.bankAccount) {
+    if (account.bankAccount) {      
+      // Delete alert transactions first
+      await prisma.alertTransactions.deleteMany({
+        where: {
+          bankAccountId: account.bankAccount.id,
+        },
+      });
+
+      // Then delete the bank account
       await prisma.bankAccount.delete({
         where: {
           id: account.bankAccount.id,
         },
       });
     }
+
+    // Delete all rules for the account
+    await prisma.rules.deleteMany({
+      where: {
+        accountId: accountId,
+      },
+    });
 
     // Then delete the main account
     await prisma.account.delete({
